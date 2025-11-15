@@ -7,15 +7,28 @@ export function useDailyRecords(date: string) {
   return useQuery({
     queryKey: ['dailyRecords', date],
     queryFn: async () => {
+      if (!date) return [];
+
       const { data, error } = await supabase
         .from('daily_records')
-        .select('*, treatment:treatments(*)')
+        .select('*, treatments(*)')
         .eq('date', date)
         .order('created_at');
 
-      if (error) throw error;
-      return data as DailyRecord[];
+      if (error) {
+        console.error('useDailyRecords error:', error);
+        throw error;
+      }
+
+      // treatment 필드를 treatments에서 가져온 데이터로 매핑
+      const records = (data || []).map(record => ({
+        ...record,
+        treatment: record.treatments
+      }));
+
+      return records as DailyRecord[];
     },
+    enabled: !!date,
   });
 }
 
@@ -29,13 +42,23 @@ export function useMonthlyRecords(yearMonth: string) {
 
       const { data, error } = await supabase
         .from('daily_records')
-        .select('*, treatment:treatments(*)')
+        .select('*, treatments(*)')
         .gte('date', startDate)
         .lte('date', endDate)
         .order('date');
 
-      if (error) throw error;
-      return data as DailyRecord[];
+      if (error) {
+        console.error('useMonthlyRecords error:', error);
+        throw error;
+      }
+
+      // treatment 필드를 treatments에서 가져온 데이터로 매핑
+      const records = (data || []).map(record => ({
+        ...record,
+        treatment: record.treatments
+      }));
+
+      return records as DailyRecord[];
     },
   });
 }
@@ -52,7 +75,7 @@ export function useAddDailyRecord() {
         .select('*')
         .eq('date', record.date)
         .eq('treatment_id', record.treatment_id)
-        .single();
+        .maybeSingle();
 
       if (existing) {
         // 2. 있으면 count 증가
@@ -63,21 +86,37 @@ export function useAddDailyRecord() {
             total_amount: existing.total_amount + record.total_amount,
           })
           .eq('id', existing.id)
-          .select('*, treatment:treatments(*)')
+          .select('*, treatments(*)')
           .single();
 
-        if (error) throw error;
-        return data as DailyRecord;
+        if (error) {
+          console.error('Update record error:', error);
+          throw error;
+        }
+
+        const result = {
+          ...data,
+          treatment: data.treatments
+        };
+        return result as DailyRecord;
       } else {
         // 3. 없으면 새로 추가
         const { data, error } = await supabase
           .from('daily_records')
           .insert(record)
-          .select('*, treatment:treatments(*)')
+          .select('*, treatments(*)')
           .single();
 
-        if (error) throw error;
-        return data as DailyRecord;
+        if (error) {
+          console.error('Insert record error:', error);
+          throw error;
+        }
+
+        const result = {
+          ...data,
+          treatment: data.treatments
+        };
+        return result as DailyRecord;
       }
     },
     onSuccess: (_, variables) => {
@@ -98,11 +137,19 @@ export function useUpdateDailyRecord() {
         .from('daily_records')
         .update({ count, total_amount })
         .eq('id', id)
-        .select('*, treatment:treatments(*)')
+        .select('*, treatments(*)')
         .single();
 
-      if (error) throw error;
-      return data as DailyRecord;
+      if (error) {
+        console.error('Update record error:', error);
+        throw error;
+      }
+
+      const result = {
+        ...data,
+        treatment: data.treatments
+      };
+      return result as DailyRecord;
     },
     onSuccess: (data) => {
       queryClient.invalidateQueries({ queryKey: ['dailyRecords', data.date] });
@@ -123,7 +170,10 @@ export function useDeleteDailyRecord() {
         .delete()
         .eq('id', id);
 
-      if (error) throw error;
+      if (error) {
+        console.error('Delete record error:', error);
+        throw error;
+      }
       return { id, date };
     },
     onSuccess: (data) => {
