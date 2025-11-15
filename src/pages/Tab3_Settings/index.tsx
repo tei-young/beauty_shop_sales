@@ -232,13 +232,12 @@ export default function SettingsTab() {
               type="text"
               value={formData.icon}
               onChange={(e) => {
-                // 이모지만 필터링
-                const filtered = e.target.value.split('').filter(char =>
-                  /\p{Emoji}/u.test(char)
-                ).join('');
-                setFormData({ ...formData, icon: filtered.slice(0, 2) });
+                // 최대 2자까지만 입력
+                const value = e.target.value.slice(0, 2);
+                setFormData({ ...formData, icon: value });
               }}
               placeholder="💅"
+              maxLength={2}
               className="w-full px-4 py-3 border border-divider rounded-lg focus:outline-none focus:ring-2 focus:ring-primary text-center text-3xl"
             />
             <p className="text-xs text-textSecondary mt-1">
