@@ -1,23 +1,32 @@
 import { useState } from 'react';
-import { ChevronLeft, ChevronRight, Edit2 } from 'lucide-react';
+import { ChevronLeft, ChevronRight, Edit2, Plus, Trash2, Settings } from 'lucide-react';
 import { format, addMonths, subMonths } from 'date-fns';
 import { ko } from 'date-fns/locale';
 import Sheet from '../../components/Sheet';
 import { useMonthlyRecords } from '../../hooks/useDailyRecords';
-import { useExpenseCategories } from '../../hooks/useExpenseCategories';
+import { useExpenseCategories, useAddExpenseCategory, useUpdateExpenseCategory, useDeleteExpenseCategory } from '../../hooks/useExpenseCategories';
 import { useMonthlyExpenses, useUpsertMonthlyExpense } from '../../hooks/useMonthlyExpenses';
 import { formatFullCurrency } from '../../utils/currency';
+import type { ExpenseCategory } from '../../types';
 
 export default function SettlementTab() {
   const [currentDate, setCurrentDate] = useState(new Date());
   const [selectedCategory, setSelectedCategory] = useState<{ id: string; name: string } | null>(null);
   const [expenseAmount, setExpenseAmount] = useState('');
 
+  // 지출 항목 관리 상태
+  const [isCategoryManageSheetOpen, setIsCategoryManageSheetOpen] = useState(false);
+  const [editingCategory, setEditingCategory] = useState<ExpenseCategory | null>(null);
+  const [categoryFormData, setCategoryFormData] = useState({ name: '', icon: '' });
+
   const yearMonth = format(currentDate, 'yyyy-MM');
   const { data: monthlyRecords = [] } = useMonthlyRecords(yearMonth);
   const { data: expenseCategories = [] } = useExpenseCategories();
   const { data: monthlyExpenses = [] } = useMonthlyExpenses(yearMonth);
   const upsertExpense = useUpsertMonthlyExpense();
+  const addCategory = useAddExpenseCategory();
+  const updateCategory = useUpdateExpenseCategory();
+  const deleteCategory = useDeleteExpenseCategory();
 
   // 월 총 매출 계산
   const monthlyRevenue = monthlyRecords.reduce((sum, record) => sum + record.total_amount, 0);
@@ -32,15 +41,15 @@ export default function SettlementTab() {
   const handlePrevMonth = () => setCurrentDate(subMonths(currentDate, 1));
   const handleNextMonth = () => setCurrentDate(addMonths(currentDate, 1));
 
-  // 지출 항목 클릭
+  // 지출 금액 입력 클릭
   const handleCategoryClick = (categoryId: string, categoryName: string) => {
     const existingExpense = monthlyExpenses.find(e => e.category_id === categoryId);
     setSelectedCategory({ id: categoryId, name: categoryName });
     setExpenseAmount(existingExpense ? existingExpense.amount.toString() : '');
   };
 
-  // Sheet 닫기
-  const closeSheet = () => {
+  // 지출 금액 Sheet 닫기
+  const closeExpenseSheet = () => {
     setSelectedCategory(null);
     setExpenseAmount('');
   };
@@ -57,9 +66,72 @@ export default function SettlementTab() {
         category_id: selectedCategory.id,
         amount,
       });
-      closeSheet();
+      closeExpenseSheet();
     } catch (err: any) {
       alert(err.message || '저장 중 오류가 발생했습니다.');
+    }
+  };
+
+  // 지출 항목 추가 Sheet 열기
+  const openAddCategorySheet = () => {
+    setCategoryFormData({ name: '', icon: '' });
+    setEditingCategory(null);
+    setIsCategoryManageSheetOpen(true);
+  };
+
+  // 지출 항목 수정 Sheet 열기
+  const openEditCategorySheet = (category: ExpenseCategory, e: React.MouseEvent) => {
+    e.stopPropagation(); // 부모 클릭 이벤트 방지
+    setCategoryFormData({ name: category.name, icon: category.icon || '' });
+    setEditingCategory(category);
+    setIsCategoryManageSheetOpen(true);
+  };
+
+  // 지출 항목 관리 Sheet 닫기
+  const closeCategorySheet = () => {
+    setIsCategoryManageSheetOpen(false);
+    setEditingCategory(null);
+  };
+
+  // 지출 항목 저장
+  const handleSaveCategory = async () => {
+    if (!categoryFormData.name) {
+      alert('항목명을 입력해주세요.');
+      return;
+    }
+
+    try {
+      if (editingCategory) {
+        // 수정
+        await updateCategory.mutateAsync({
+          id: editingCategory.id,
+          name: categoryFormData.name,
+          icon: categoryFormData.icon || undefined,
+        });
+      } else {
+        // 추가
+        const maxOrder = expenseCategories.reduce((max, c) => Math.max(max, c.order), -1);
+        await addCategory.mutateAsync({
+          name: categoryFormData.name,
+          icon: categoryFormData.icon || undefined,
+          order: maxOrder + 1,
+        });
+      }
+      closeCategorySheet();
+    } catch (err: any) {
+      alert(err.message || '오류가 발생했습니다.');
+    }
+  };
+
+  // 지출 항목 삭제
+  const handleDeleteCategory = async (id: string, name: string, e: React.MouseEvent) => {
+    e.stopPropagation(); // 부모 클릭 이벤트 방지
+    if (!confirm(`"${name}" 항목을 삭제하시겠습니까?`)) return;
+
+    try {
+      await deleteCategory.mutateAsync(id);
+    } catch (err: any) {
+      alert(err.message || '삭제 중 오류가 발생했습니다.');
     }
   };
 
@@ -119,7 +191,16 @@ export default function SettlementTab() {
 
         {/* 하단 50%: 지출 관리 */}
         <div className="p-m space-y-4 border-t-8 border-background">
-          <h2 className="text-lg font-semibold">지출 관리</h2>
+          <div className="flex items-center justify-between">
+            <h2 className="text-lg font-semibold">지출 관리</h2>
+            <button
+              onClick={openAddCategorySheet}
+              className="flex items-center gap-1 px-3 py-2 text-sm bg-primary text-white rounded-lg hover:bg-blue-600 transition-colors"
+            >
+              <Plus size={16} />
+              <span>항목 추가</span>
+            </button>
+          </div>
 
           {expenseCategories.length > 0 ? (
             <div className="space-y-3">
@@ -127,24 +208,45 @@ export default function SettlementTab() {
                 const amount = getExpenseAmount(category.id);
 
                 return (
-                  <button
+                  <div
                     key={category.id}
-                    onClick={() => handleCategoryClick(category.id, category.name)}
-                    className="w-full bg-card rounded-lg p-4 border border-divider hover:bg-gray-50 transition-colors"
+                    className="bg-card rounded-lg p-4 border border-divider"
                   >
-                    <div className="flex items-center justify-between">
+                    <div className="flex items-center justify-between mb-2">
                       <div className="flex items-center gap-3">
                         <div className="text-2xl">{category.icon || '📝'}</div>
-                        <div className="text-left">
+                        <div>
                           <h3 className="font-semibold">{category.name}</h3>
                           <p className="text-sm text-textSecondary">
                             {amount > 0 ? formatFullCurrency(amount) : '미입력'}
                           </p>
                         </div>
                       </div>
-                      <Edit2 size={20} className="text-gray-400" />
+                      <div className="flex gap-1">
+                        <button
+                          onClick={(e) => openEditCategorySheet(category, e)}
+                          className="p-2 hover:bg-gray-100 rounded-lg transition-colors"
+                          title="항목 수정"
+                        >
+                          <Settings size={18} className="text-gray-500" />
+                        </button>
+                        <button
+                          onClick={(e) => handleDeleteCategory(category.id, category.name, e)}
+                          className="p-2 hover:bg-gray-100 rounded-lg transition-colors"
+                          title="항목 삭제"
+                        >
+                          <Trash2 size={18} className="text-red-500" />
+                        </button>
+                      </div>
                     </div>
-                  </button>
+                    <button
+                      onClick={() => handleCategoryClick(category.id, category.name)}
+                      className="w-full flex items-center justify-between p-2 bg-gray-50 hover:bg-gray-100 rounded-lg transition-colors"
+                    >
+                      <span className="text-sm text-textSecondary">금액 입력</span>
+                      <Edit2 size={16} className="text-gray-400" />
+                    </button>
+                  </div>
                 );
               })}
             </div>
@@ -152,16 +254,16 @@ export default function SettlementTab() {
             <div className="text-center py-12 text-textSecondary">
               <p className="text-4xl mb-4">📝</p>
               <p>등록된 지출 항목이 없습니다</p>
-              <p className="text-sm mt-2">설정 탭에서 지출 항목을 추가해주세요</p>
+              <p className="text-sm mt-2">+ 항목 추가 버튼을 눌러 지출 항목을 추가해보세요</p>
             </div>
           )}
         </div>
       </div>
 
-      {/* 지출 입력 Sheet */}
+      {/* 지출 금액 입력 Sheet */}
       <Sheet
         isOpen={selectedCategory !== null}
-        onClose={closeSheet}
+        onClose={closeExpenseSheet}
         title={selectedCategory?.name || ''}
       >
         <div className="space-y-6">
@@ -183,7 +285,7 @@ export default function SettlementTab() {
 
           <div className="flex gap-3 pt-4">
             <button
-              onClick={closeSheet}
+              onClick={closeExpenseSheet}
               className="flex-1 px-4 py-3 border border-divider rounded-lg hover:bg-gray-50 transition-colors"
             >
               취소
@@ -194,6 +296,66 @@ export default function SettlementTab() {
               className="flex-1 px-4 py-3 bg-primary text-white rounded-lg hover:bg-blue-600 transition-colors disabled:opacity-50"
             >
               {upsertExpense.isPending ? '저장 중...' : '저장'}
+            </button>
+          </div>
+        </div>
+      </Sheet>
+
+      {/* 지출 항목 추가/수정 Sheet */}
+      <Sheet
+        isOpen={isCategoryManageSheetOpen}
+        onClose={closeCategorySheet}
+        title={editingCategory ? '지출 항목 수정' : '지출 항목 추가'}
+      >
+        <div className="space-y-6">
+          {/* 항목명 */}
+          <div>
+            <label className="block text-sm font-medium mb-2">항목명 *</label>
+            <input
+              type="text"
+              value={categoryFormData.name}
+              onChange={(e) => setCategoryFormData({ ...categoryFormData, name: e.target.value })}
+              placeholder="예: 월세"
+              maxLength={20}
+              className="w-full px-4 py-3 border border-divider rounded-lg focus:outline-none focus:ring-2 focus:ring-primary"
+            />
+          </div>
+
+          {/* 이모지 */}
+          <div>
+            <label className="block text-sm font-medium mb-2">이모지 (선택)</label>
+            <input
+              type="text"
+              value={categoryFormData.icon}
+              onChange={(e) => {
+                // 이모지만 필터링
+                const filtered = e.target.value.split('').filter(char =>
+                  /\p{Emoji}/u.test(char)
+                ).join('');
+                setCategoryFormData({ ...categoryFormData, icon: filtered.slice(0, 2) });
+              }}
+              placeholder="🏠"
+              className="w-full px-4 py-3 border border-divider rounded-lg focus:outline-none focus:ring-2 focus:ring-primary text-center text-3xl"
+            />
+            <p className="text-xs text-textSecondary mt-1">
+              키보드에서 이모지를 선택하세요
+            </p>
+          </div>
+
+          {/* 버튼 */}
+          <div className="flex gap-3 pt-4">
+            <button
+              onClick={closeCategorySheet}
+              className="flex-1 px-4 py-3 border border-divider rounded-lg hover:bg-gray-50 transition-colors"
+            >
+              취소
+            </button>
+            <button
+              onClick={handleSaveCategory}
+              disabled={addCategory.isPending || updateCategory.isPending}
+              className="flex-1 px-4 py-3 bg-primary text-white rounded-lg hover:bg-blue-600 transition-colors disabled:opacity-50"
+            >
+              {addCategory.isPending || updateCategory.isPending ? '저장 중...' : '저장'}
             </button>
           </div>
         </div>
