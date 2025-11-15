@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { Plus, Trash2, Edit } from 'lucide-react';
+import { Plus, Trash2, Edit, X } from 'lucide-react';
 import { useTreatments, useAddTreatment, useDeleteTreatment, useUpdateTreatment } from '../../hooks/useTreatments';
 import { formatCurrency } from '../../utils/currency';
 import { TREATMENT_COLORS } from '../../utils/colors';
@@ -228,20 +228,30 @@ export default function SettingsTab() {
           {/* 이모지 */}
           <div>
             <label className="block text-sm font-medium mb-2">이모지 (선택)</label>
-            <input
-              type="text"
-              value={formData.icon}
-              onChange={(e) => {
-                // 최대 2자까지만 입력
-                const value = e.target.value.slice(0, 2);
-                setFormData({ ...formData, icon: value });
-              }}
-              placeholder="💅"
-              maxLength={2}
-              className="w-full px-4 py-3 border border-divider rounded-lg focus:outline-none focus:ring-2 focus:ring-primary text-center text-3xl"
-            />
+            <div className="relative">
+              <input
+                type="text"
+                value={formData.icon}
+                onChange={(e) => {
+                  const value = e.target.value;
+                  setFormData({ ...formData, icon: value.slice(0, 2) });
+                }}
+                onFocus={(e) => e.target.select()}
+                placeholder="탭해서 이모지 입력"
+                className="w-full px-4 py-3 border border-divider rounded-lg focus:outline-none focus:ring-2 focus:ring-primary text-center text-3xl"
+              />
+              {formData.icon && (
+                <button
+                  type="button"
+                  onClick={() => setFormData({ ...formData, icon: '' })}
+                  className="absolute right-2 top-1/2 -translate-y-1/2 p-1 hover:bg-gray-100 rounded-full"
+                >
+                  <X size={20} className="text-gray-400" />
+                </button>
+              )}
+            </div>
             <p className="text-xs text-textSecondary mt-1">
-              키보드에서 이모지를 선택하세요
+              이모지 키보드를 열어 선택하세요 (선택사항)
             </p>
           </div>
 
