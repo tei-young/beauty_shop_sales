@@ -206,7 +206,7 @@ export default function SettingsTab() {
               value={formData.name}
               onChange={(e) => setFormData({ ...formData, name: e.target.value })}
               placeholder="예: 네일아트"
-              maxLength={10}
+              maxLength={30}
               className="w-full px-4 py-3 border border-divider rounded-lg focus:outline-none focus:ring-2 focus:ring-primary"
             />
           </div>
