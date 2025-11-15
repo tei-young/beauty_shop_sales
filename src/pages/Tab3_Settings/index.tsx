@@ -17,7 +17,12 @@ export default function SettingsTab() {
   const [editingTreatment, setEditingTreatment] = useState<Treatment | null>(null);
 
   // 폼 상태
-  const [formData, setFormData] = useState({
+  const [formData, setFormData] = useState<{
+    name: string;
+    price: string;
+    icon: string;
+    color: string;
+  }>({
     name: '',
     price: '',
     icon: '',
