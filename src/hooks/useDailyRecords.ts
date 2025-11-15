@@ -37,8 +37,16 @@ export function useMonthlyRecords(yearMonth: string) {
   return useQuery({
     queryKey: ['monthlyRecords', yearMonth],
     queryFn: async () => {
-      const startDate = `${yearMonth}-01`;
-      const endDate = `${yearMonth}-31`;
+      // 날짜 범위를 정확히 계산 (각 월의 실제 마지막 날 사용)
+      const year = parseInt(yearMonth.split('-')[0]);
+      const month = parseInt(yearMonth.split('-')[1]);
+
+      // 해당 월의 첫날과 마지막날 계산
+      const firstDay = new Date(year, month - 1, 1);
+      const lastDay = new Date(year, month, 0); // 다음 월 0일 = 이번 월 마지막 날
+
+      const startDate = firstDay.toISOString().split('T')[0]; // YYYY-MM-DD
+      const endDate = lastDay.toISOString().split('T')[0]; // YYYY-MM-DD
 
       const { data, error } = await supabase
         .from('daily_records')
