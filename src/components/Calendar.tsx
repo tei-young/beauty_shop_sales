@@ -1,5 +1,4 @@
 import { format, startOfMonth, endOfMonth, eachDayOfInterval, isSameMonth, isToday, startOfWeek, endOfWeek } from 'date-fns';
-import { ko } from 'date-fns/locale';
 import type { DailyRecord } from '../types';
 
 interface CalendarProps {
@@ -21,12 +20,6 @@ export default function Calendar({ currentDate, records, onDateClick }: Calendar
   const getRecordsForDate = (date: Date) => {
     const dateString = format(date, 'yyyy-MM-dd');
     return records.filter((record) => record.date === dateString);
-  };
-
-  // 특정 날짜의 총 매출
-  const getTotalForDate = (date: Date) => {
-    const dateRecords = getRecordsForDate(date);
-    return dateRecords.reduce((sum, record) => sum + record.total_amount, 0);
   };
 
   return (

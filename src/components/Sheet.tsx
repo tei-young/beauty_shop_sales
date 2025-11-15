@@ -1,4 +1,5 @@
-import { useEffect, useState, ReactNode } from 'react';
+import { useEffect, useState } from 'react';
+import type { ReactNode } from 'react';
 import { X } from 'lucide-react';
 
 interface SheetProps {
