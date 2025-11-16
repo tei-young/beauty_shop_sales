@@ -40,7 +40,7 @@ export interface Treatment {
   id: string;
   name: string;
   price: number;
-  icon?: string;
+  icon?: string | null;
   color: string;
   order: number;
   created_at?: string;
@@ -60,7 +60,7 @@ export interface DailyRecord {
 export interface ExpenseCategory {
   id: string;
   name: string;
-  icon?: string;
+  icon?: string | null;
   order: number;
   created_at?: string;
 }

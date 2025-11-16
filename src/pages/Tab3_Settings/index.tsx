@@ -73,7 +73,7 @@ export default function SettingsTab() {
           id: editingTreatment.id,
           name: formData.name,
           price,
-          icon: formData.icon || undefined,
+          icon: formData.icon || null,
           color: formData.color,
         });
       } else {
@@ -82,7 +82,7 @@ export default function SettingsTab() {
         await addTreatment.mutateAsync({
           name: formData.name,
           price,
-          icon: formData.icon || undefined,
+          icon: formData.icon || null,
           color: formData.color,
           order: maxOrder + 1,
         });
