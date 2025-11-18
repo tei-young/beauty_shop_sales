@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { ChevronLeft, ChevronRight, Plus, Trash2 } from 'lucide-react';
+import { ChevronLeft, ChevronRight, Plus, Trash2, Edit } from 'lucide-react';
 import { format, addMonths, subMonths } from 'date-fns';
 import { ko } from 'date-fns/locale';
 import Calendar from '../../components/Calendar';
@@ -7,26 +7,40 @@ import Sheet from '../../components/Sheet';
 import TreatmentButton from '../../components/TreatmentButton';
 import { useMonthlyRecords, useDailyRecords, useAddDailyRecord, useDeleteDailyRecord } from '../../hooks/useDailyRecords';
 import { useTreatments } from '../../hooks/useTreatments';
+import { useDailyAdjustments, useAddAdjustment, useUpdateAdjustment, useDeleteAdjustment } from '../../hooks/useDailyAdjustments';
 import { formatCurrency, formatFullCurrency } from '../../utils/currency';
 import { formatDisplayDate } from '../../utils/date';
+import type { DailyAdjustment } from '../../types';
 
 export default function CalendarTab() {
   const [currentDate, setCurrentDate] = useState(new Date());
   const [selectedDate, setSelectedDate] = useState<string | null>(null);
   const [isTreatmentSheetOpen, setIsTreatmentSheetOpen] = useState(false);
+  const [isAdjustmentSheetOpen, setIsAdjustmentSheetOpen] = useState(false);
+  const [editingAdjustment, setEditingAdjustment] = useState<DailyAdjustment | null>(null);
+  const [adjustmentFormData, setAdjustmentFormData] = useState({
+    amount: '',
+    reason: '',
+  });
 
   const yearMonth = format(currentDate, 'yyyy-MM');
   const { data: monthlyRecords = [] } = useMonthlyRecords(yearMonth);
   const { data: dailyRecords = [] } = useDailyRecords(selectedDate || '');
+  const { data: dailyAdjustments = [] } = useDailyAdjustments(selectedDate || '');
   const { data: treatments = [] } = useTreatments();
   const addRecord = useAddDailyRecord();
   const deleteRecord = useDeleteDailyRecord();
+  const addAdjustment = useAddAdjustment();
+  const updateAdjustment = useUpdateAdjustment();
+  const deleteAdjustment = useDeleteAdjustment();
 
   // 월 총 매출 계산
   const monthlyTotal = monthlyRecords.reduce((sum, record) => sum + record.total_amount, 0);
 
-  // 일별 총 매출
-  const dailyTotal = dailyRecords.reduce((sum, record) => sum + record.total_amount, 0);
+  // 일별 총 매출 (시술 + 조정)
+  const treatmentTotal = dailyRecords.reduce((sum, record) => sum + record.total_amount, 0);
+  const adjustmentTotal = dailyAdjustments.reduce((sum, adj) => sum + adj.amount, 0);
+  const dailyTotal = treatmentTotal + adjustmentTotal;
 
   // 월 변경
   const handlePrevMonth = () => setCurrentDate(subMonths(currentDate, 1));
@@ -41,11 +55,36 @@ export default function CalendarTab() {
   const closeDailySheet = () => {
     setSelectedDate(null);
     setIsTreatmentSheetOpen(false);
+    setIsAdjustmentSheetOpen(false);
+    setEditingAdjustment(null);
   };
 
   // 시술 선택 Sheet 열기
   const openTreatmentSheet = () => {
     setIsTreatmentSheetOpen(true);
+  };
+
+  // 조정 추가 Sheet 열기
+  const openAddAdjustmentSheet = () => {
+    setAdjustmentFormData({ amount: '', reason: '' });
+    setEditingAdjustment(null);
+    setIsAdjustmentSheetOpen(true);
+  };
+
+  // 조정 수정 Sheet 열기
+  const openEditAdjustmentSheet = (adjustment: DailyAdjustment) => {
+    setAdjustmentFormData({
+      amount: adjustment.amount.toString(),
+      reason: adjustment.reason || '',
+    });
+    setEditingAdjustment(adjustment);
+    setIsAdjustmentSheetOpen(true);
+  };
+
+  // 조정 Sheet 닫기
+  const closeAdjustmentSheet = () => {
+    setIsAdjustmentSheetOpen(false);
+    setEditingAdjustment(null);
   };
 
   // 시술 추가
@@ -71,6 +110,52 @@ export default function CalendarTab() {
 
     try {
       await deleteRecord.mutateAsync({ id, date: selectedDate });
+    } catch (err: any) {
+      alert(err.message || '삭제 중 오류가 발생했습니다.');
+    }
+  };
+
+  // 조정 저장
+  const handleSaveAdjustment = async () => {
+    if (!selectedDate) return;
+
+    const amount = parseInt(adjustmentFormData.amount);
+    if (isNaN(amount) || amount === 0) {
+      alert('금액을 입력해주세요. (할인은 음수로 입력)');
+      return;
+    }
+
+    try {
+      if (editingAdjustment) {
+        // 수정
+        await updateAdjustment.mutateAsync({
+          id: editingAdjustment.id,
+          date: selectedDate,
+          amount,
+          reason: adjustmentFormData.reason || null,
+        });
+      } else {
+        // 추가
+        await addAdjustment.mutateAsync({
+          date: selectedDate,
+          amount,
+          reason: adjustmentFormData.reason || null,
+        });
+      }
+      closeAdjustmentSheet();
+    } catch (err: any) {
+      alert(err.message || '오류가 발생했습니다.');
+    }
+  };
+
+  // 조정 삭제
+  const handleDeleteAdjustment = async (id: string, amount: number) => {
+    if (!selectedDate) return;
+    const type = amount > 0 ? '추가금액' : '할인';
+    if (!confirm(`${type} ${formatFullCurrency(Math.abs(amount))}를 삭제하시겠습니까?`)) return;
+
+    try {
+      await deleteAdjustment.mutateAsync({ id, date: selectedDate });
     } catch (err: any) {
       alert(err.message || '삭제 중 오류가 발생했습니다.');
     }
@@ -119,16 +204,30 @@ export default function CalendarTab() {
           <div className="bg-blue-50 rounded-lg p-4 text-center">
             <div className="text-sm text-textSecondary mb-1">일 총 매출</div>
             <div className="text-xl font-bold text-primary">{formatFullCurrency(dailyTotal)}</div>
+            {adjustmentTotal !== 0 && (
+              <div className="text-xs text-textSecondary mt-1">
+                (시술: {formatFullCurrency(treatmentTotal)} {adjustmentTotal > 0 ? '+' : ''}{adjustmentTotal !== 0 ? formatFullCurrency(adjustmentTotal) : ''})
+              </div>
+            )}
           </div>
 
-          {/* 시술 추가 버튼 */}
-          <button
-            onClick={openTreatmentSheet}
-            className="w-full flex items-center justify-center gap-2 py-3 bg-primary text-white rounded-lg hover:bg-blue-600 transition-colors"
-          >
-            <Plus size={20} />
-            <span>시술 추가</span>
-          </button>
+          {/* 액션 버튼 */}
+          <div className="flex gap-2">
+            <button
+              onClick={openTreatmentSheet}
+              className="flex-1 flex items-center justify-center gap-2 py-3 bg-primary text-white rounded-lg hover:bg-blue-600 transition-colors"
+            >
+              <Plus size={20} />
+              <span>시술 추가</span>
+            </button>
+            <button
+              onClick={openAddAdjustmentSheet}
+              className="flex-1 flex items-center justify-center gap-2 py-3 bg-green-500 text-white rounded-lg hover:bg-green-600 transition-colors"
+            >
+              <Plus size={20} />
+              <span>조정</span>
+            </button>
+          </div>
 
           {/* 시술 기록 리스트 */}
           {dailyRecords.length > 0 ? (
@@ -172,6 +271,54 @@ export default function CalendarTab() {
               <p className="text-sm mt-1">+ 시술 추가 버튼을 눌러보세요</p>
             </div>
           )}
+
+          {/* 조정 내역 */}
+          {dailyAdjustments.length > 0 && (
+            <div className="space-y-2">
+              <h3 className="text-sm font-semibold text-textSecondary">조정 내역</h3>
+              {dailyAdjustments.map((adjustment) => (
+                <div
+                  key={adjustment.id}
+                  className={`rounded-lg p-3 border flex items-center gap-3 ${
+                    adjustment.amount > 0 ? 'bg-green-50 border-green-200' : 'bg-red-50 border-red-200'
+                  }`}
+                >
+                  {/* 아이콘 */}
+                  <div className={`w-10 h-10 rounded-lg flex items-center justify-center text-xl ${
+                    adjustment.amount > 0 ? 'bg-green-100' : 'bg-red-100'
+                  }`}>
+                    {adjustment.amount > 0 ? '➕' : '➖'}
+                  </div>
+
+                  {/* 정보 */}
+                  <div className="flex-1">
+                    <h4 className="font-semibold">
+                      {adjustment.amount > 0 ? '추가금액' : '할인'} {formatFullCurrency(Math.abs(adjustment.amount))}
+                    </h4>
+                    {adjustment.reason && (
+                      <p className="text-sm text-textSecondary">{adjustment.reason}</p>
+                    )}
+                  </div>
+
+                  {/* 액션 버튼 */}
+                  <div className="flex gap-1">
+                    <button
+                      onClick={() => openEditAdjustmentSheet(adjustment)}
+                      className="p-2 hover:bg-gray-100 rounded-lg transition-colors"
+                    >
+                      <Edit size={18} className="text-blue-500" />
+                    </button>
+                    <button
+                      onClick={() => handleDeleteAdjustment(adjustment.id, adjustment.amount)}
+                      className="p-2 hover:bg-gray-100 rounded-lg transition-colors"
+                    >
+                      <Trash2 size={18} className="text-red-500" />
+                    </button>
+                  </div>
+                </div>
+              ))}
+            </div>
+          )}
         </div>
       </Sheet>
 
@@ -202,6 +349,69 @@ export default function CalendarTab() {
               <p className="text-sm mt-2">설정 탭에서 시술을 추가해주세요</p>
             </div>
           )}
+        </Sheet>
+      )}
+
+      {/* 조정 추가/수정 Sheet (Layer 3) */}
+      {selectedDate && (
+        <Sheet
+          isOpen={isAdjustmentSheetOpen}
+          onClose={closeAdjustmentSheet}
+          title={editingAdjustment ? '조정 수정' : '조정 추가'}
+        >
+          <div className="space-y-6">
+            {/* 안내 메시지 */}
+            <div className="bg-yellow-50 border border-yellow-200 rounded-lg p-3">
+              <p className="text-sm text-yellow-800">
+                💡 할인은 음수(-)로, 추가금액은 양수(+)로 입력하세요
+              </p>
+              <p className="text-xs text-yellow-700 mt-1">
+                예: 할인 10,000원 → -10000 입력
+              </p>
+            </div>
+
+            {/* 금액 */}
+            <div>
+              <label className="block text-sm font-medium mb-2">금액 *</label>
+              <input
+                type="number"
+                value={adjustmentFormData.amount}
+                onChange={(e) => setAdjustmentFormData({ ...adjustmentFormData, amount: e.target.value })}
+                placeholder="-10000 또는 5000"
+                className="w-full px-4 py-3 border border-divider rounded-lg focus:outline-none focus:ring-2 focus:ring-primary"
+              />
+            </div>
+
+            {/* 사유 */}
+            <div>
+              <label className="block text-sm font-medium mb-2">사유 (선택)</label>
+              <input
+                type="text"
+                value={adjustmentFormData.reason}
+                onChange={(e) => setAdjustmentFormData({ ...adjustmentFormData, reason: e.target.value })}
+                placeholder="예: 단체 할인, 팁"
+                maxLength={50}
+                className="w-full px-4 py-3 border border-divider rounded-lg focus:outline-none focus:ring-2 focus:ring-primary"
+              />
+            </div>
+
+            {/* 버튼 */}
+            <div className="flex gap-3 pt-4">
+              <button
+                onClick={closeAdjustmentSheet}
+                className="flex-1 px-4 py-3 border border-divider rounded-lg hover:bg-gray-50 transition-colors"
+              >
+                취소
+              </button>
+              <button
+                onClick={handleSaveAdjustment}
+                disabled={addAdjustment.isPending || updateAdjustment.isPending}
+                className="flex-1 px-4 py-3 bg-primary text-white rounded-lg hover:bg-blue-600 transition-colors disabled:opacity-50"
+              >
+                {addAdjustment.isPending || updateAdjustment.isPending ? '저장 중...' : '저장'}
+              </button>
+            </div>
+          </div>
         </Sheet>
       )}
     </div>

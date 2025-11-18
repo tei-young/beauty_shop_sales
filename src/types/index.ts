@@ -35,6 +35,14 @@ export interface MonthlyExpenseRow {
   created_at: string;
 }
 
+export interface DailyAdjustmentRow {
+  id: string;
+  date: string;
+  amount: number;
+  reason: string | null;
+  created_at: string;
+}
+
 // 애플리케이션 타입 (조인된 데이터 포함)
 export interface Treatment {
   id: string;
@@ -74,6 +82,14 @@ export interface MonthlyExpense {
   category?: ExpenseCategory;
 }
 
+export interface DailyAdjustment {
+  id: string;
+  date: string;
+  amount: number;
+  reason?: string | null;
+  created_at?: string;
+}
+
 // 데이터베이스 타입 정의
 export interface Database {
   public: {
@@ -97,6 +113,11 @@ export interface Database {
         Row: MonthlyExpenseRow;
         Insert: Omit<MonthlyExpenseRow, 'id' | 'created_at'>;
         Update: Partial<Omit<MonthlyExpenseRow, 'id' | 'created_at'>>;
+      };
+      daily_adjustments: {
+        Row: DailyAdjustmentRow;
+        Insert: Omit<DailyAdjustmentRow, 'id' | 'created_at'>;
+        Update: Partial<Omit<DailyAdjustmentRow, 'id' | 'created_at'>>;
       };
     };
   };

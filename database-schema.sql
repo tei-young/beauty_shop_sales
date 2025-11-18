@@ -42,11 +42,21 @@ CREATE TABLE IF NOT EXISTS monthly_expenses (
   UNIQUE(year_month, category_id)
 );
 
+-- 5. 일자별 조정 테이블 (할인, 팁 등)
+CREATE TABLE IF NOT EXISTS daily_adjustments (
+  id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+  date DATE NOT NULL,
+  amount INTEGER NOT NULL,      -- 양수: 추가금액, 음수: 할인
+  reason TEXT,                  -- 조정 사유 (예: "단체 할인", "팁")
+  created_at TIMESTAMPTZ DEFAULT NOW()
+);
+
 -- 인덱스 생성
 CREATE INDEX IF NOT EXISTS idx_daily_records_date ON daily_records(date);
 CREATE INDEX IF NOT EXISTS idx_daily_records_treatment_id ON daily_records(treatment_id);
 CREATE INDEX IF NOT EXISTS idx_monthly_expenses_year_month ON monthly_expenses(year_month);
 CREATE INDEX IF NOT EXISTS idx_monthly_expenses_category_id ON monthly_expenses(category_id);
+CREATE INDEX IF NOT EXISTS idx_daily_adjustments_date ON daily_adjustments(date);
 
 -- updated_at 자동 업데이트 함수
 CREATE OR REPLACE FUNCTION update_updated_at_column()
