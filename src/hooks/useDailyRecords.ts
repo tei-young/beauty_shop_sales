@@ -41,12 +41,10 @@ export function useMonthlyRecords(yearMonth: string) {
       const year = parseInt(yearMonth.split('-')[0]);
       const month = parseInt(yearMonth.split('-')[1]);
 
-      // 해당 월의 첫날과 마지막날 계산
-      const firstDay = new Date(year, month - 1, 1);
-      const lastDay = new Date(year, month, 0); // 다음 월 0일 = 이번 월 마지막 날
-
-      const startDate = firstDay.toISOString().split('T')[0]; // YYYY-MM-DD
-      const endDate = lastDay.toISOString().split('T')[0]; // YYYY-MM-DD
+      // 해당 월의 첫날과 마지막날 (로컬 시간대 기준)
+      const startDate = `${yearMonth}-01`; // YYYY-MM-01
+      const lastDayOfMonth = new Date(year, month, 0).getDate(); // 월의 마지막 일
+      const endDate = `${yearMonth}-${String(lastDayOfMonth).padStart(2, '0')}`; // YYYY-MM-DD
 
       const { data, error } = await supabase
         .from('daily_records')
