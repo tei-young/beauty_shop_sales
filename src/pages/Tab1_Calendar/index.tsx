@@ -1,11 +1,11 @@
 import { useState } from 'react';
-import { ChevronLeft, ChevronRight, Plus, Trash2, Edit } from 'lucide-react';
+import { ChevronLeft, ChevronRight, Plus, Minus, Trash2, Edit } from 'lucide-react';
 import { format, addMonths, subMonths } from 'date-fns';
 import { ko } from 'date-fns/locale';
 import Calendar from '../../components/Calendar';
 import Sheet from '../../components/Sheet';
 import TreatmentButton from '../../components/TreatmentButton';
-import { useMonthlyRecords, useDailyRecords, useAddDailyRecord, useDeleteDailyRecord } from '../../hooks/useDailyRecords';
+import { useMonthlyRecords, useDailyRecords, useAddDailyRecord, useUpdateDailyRecord, useDeleteDailyRecord } from '../../hooks/useDailyRecords';
 import { useTreatments } from '../../hooks/useTreatments';
 import { useDailyAdjustments, useAddAdjustment, useUpdateAdjustment, useDeleteAdjustment } from '../../hooks/useDailyAdjustments';
 import { formatCurrency, formatFullCurrency } from '../../utils/currency';
@@ -29,6 +29,7 @@ export default function CalendarTab() {
   const { data: dailyAdjustments = [] } = useDailyAdjustments(selectedDate || '');
   const { data: treatments = [] } = useTreatments();
   const addRecord = useAddDailyRecord();
+  const updateRecord = useUpdateDailyRecord();
   const deleteRecord = useDeleteDailyRecord();
   const addAdjustment = useAddAdjustment();
   const updateAdjustment = useUpdateAdjustment();
@@ -112,6 +113,39 @@ export default function CalendarTab() {
       await deleteRecord.mutateAsync({ id, date: selectedDate });
     } catch (err: any) {
       alert(err.message || '삭제 중 오류가 발생했습니다.');
+    }
+  };
+
+  // 시술 수량 증가
+  const handleIncreaseCount = async (id: string, currentCount: number, unitPrice: number) => {
+    try {
+      const newCount = currentCount + 1;
+      const newTotalAmount = unitPrice * newCount;
+      await updateRecord.mutateAsync({ id, count: newCount, total_amount: newTotalAmount });
+    } catch (err: any) {
+      alert(err.message || '수량 증가 중 오류가 발생했습니다.');
+    }
+  };
+
+  // 시술 수량 감소
+  const handleDecreaseCount = async (id: string, currentCount: number, unitPrice: number, treatmentName: string) => {
+    if (currentCount <= 1) {
+      // 수량이 1이면 삭제 확인
+      if (!confirm(`"${treatmentName}" 기록을 삭제하시겠습니까?`)) return;
+      try {
+        await deleteRecord.mutateAsync({ id, date: selectedDate || '' });
+      } catch (err: any) {
+        alert(err.message || '삭제 중 오류가 발생했습니다.');
+      }
+    } else {
+      // 수량 감소
+      try {
+        const newCount = currentCount - 1;
+        const newTotalAmount = unitPrice * newCount;
+        await updateRecord.mutateAsync({ id, count: newCount, total_amount: newTotalAmount });
+      } catch (err: any) {
+        alert(err.message || '수량 감소 중 오류가 발생했습니다.');
+      }
     }
   };
 
@@ -233,36 +267,62 @@ export default function CalendarTab() {
           {dailyRecords.length > 0 ? (
             <div className="space-y-2">
               <h3 className="text-sm font-semibold text-textSecondary">시술 내역</h3>
-              {dailyRecords.map((record) => (
-                <div
-                  key={record.id}
-                  className="bg-card rounded-lg p-3 border border-divider flex items-center gap-3"
-                >
-                  {/* 색상 표시 */}
+              {dailyRecords.map((record) => {
+                const unitPrice = record.treatment?.price || 0;
+                return (
                   <div
-                    className="w-10 h-10 rounded-lg flex items-center justify-center text-xl"
-                    style={{ backgroundColor: record.treatment?.color + '26' }}
+                    key={record.id}
+                    className="bg-card rounded-lg p-3 border border-divider"
                   >
-                    {record.treatment?.icon || ''}
-                  </div>
+                    <div className="flex items-center gap-3">
+                      {/* 색상 표시 */}
+                      <div
+                        className="w-10 h-10 rounded-lg flex items-center justify-center text-xl flex-shrink-0"
+                        style={{ backgroundColor: record.treatment?.color + '26' }}
+                      >
+                        {record.treatment?.icon || ''}
+                      </div>
 
-                  {/* 정보 */}
-                  <div className="flex-1">
-                    <h4 className="font-semibold">{record.treatment?.name}</h4>
-                    <p className="text-sm text-textSecondary">
-                      {record.count}회 × {formatCurrency(record.treatment?.price || 0)} = {formatFullCurrency(record.total_amount)}
-                    </p>
-                  </div>
+                      {/* 정보 */}
+                      <div className="flex-1 min-w-0">
+                        <h4 className="font-semibold">{record.treatment?.name}</h4>
+                        <p className="text-sm text-textSecondary">
+                          {record.count}회 × {formatCurrency(unitPrice)} = {formatFullCurrency(record.total_amount)}
+                        </p>
+                      </div>
+                    </div>
 
-                  {/* 삭제 버튼 */}
-                  <button
-                    onClick={() => handleDeleteRecord(record.id, record.treatment?.name || '')}
-                    className="p-2 hover:bg-gray-100 rounded-lg transition-colors"
-                  >
-                    <Trash2 size={18} className="text-red-500" />
-                  </button>
-                </div>
-              ))}
+                    {/* 수량 조절 및 삭제 버튼 */}
+                    <div className="flex items-center justify-end gap-1 mt-2">
+                      <button
+                        onClick={() => handleDecreaseCount(record.id, record.count, unitPrice, record.treatment?.name || '')}
+                        className="p-2 hover:bg-gray-100 rounded-lg transition-colors"
+                        title="수량 감소"
+                      >
+                        <Minus size={16} className="text-gray-600" />
+                      </button>
+                      <span className="px-3 py-1 bg-gray-100 rounded text-sm font-medium min-w-[40px] text-center">
+                        {record.count}
+                      </span>
+                      <button
+                        onClick={() => handleIncreaseCount(record.id, record.count, unitPrice)}
+                        className="p-2 hover:bg-gray-100 rounded-lg transition-colors"
+                        title="수량 증가"
+                      >
+                        <Plus size={16} className="text-gray-600" />
+                      </button>
+                      <div className="w-px h-6 bg-divider mx-1" />
+                      <button
+                        onClick={() => handleDeleteRecord(record.id, record.treatment?.name || '')}
+                        className="p-2 hover:bg-gray-100 rounded-lg transition-colors"
+                        title="전체 삭제"
+                      >
+                        <Trash2 size={16} className="text-red-500" />
+                      </button>
+                    </div>
+                  </div>
+                );
+              })}
             </div>
           ) : (
             <div className="text-center py-8 text-textSecondary">
