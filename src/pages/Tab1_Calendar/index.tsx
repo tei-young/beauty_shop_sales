@@ -74,8 +74,10 @@ export default function CalendarTab() {
 
   // 조정 수정 Sheet 열기
   const openEditAdjustmentSheet = (adjustment: DailyAdjustment) => {
+    // 숫자를 쉼표 포맷으로 변환
+    const formattedAmount = adjustment.amount.toLocaleString('ko-KR');
     setAdjustmentFormData({
-      amount: adjustment.amount.toString(),
+      amount: formattedAmount,
       reason: adjustment.reason || '',
     });
     setEditingAdjustment(adjustment);
@@ -86,6 +88,28 @@ export default function CalendarTab() {
   const closeAdjustmentSheet = () => {
     setIsAdjustmentSheetOpen(false);
     setEditingAdjustment(null);
+  };
+
+  // 금액 입력 포맷팅 (쉼표 추가)
+  const handleAmountChange = (value: string) => {
+    // 숫자와 마이너스, 쉼표만 허용
+    const cleaned = value.replace(/[^\d,-]/g, '');
+
+    // 마이너스는 맨 앞에만 허용
+    const hasNegative = cleaned.startsWith('-');
+    const numbersOnly = cleaned.replace(/-/g, '').replace(/,/g, '');
+
+    if (numbersOnly === '') {
+      setAdjustmentFormData({ ...adjustmentFormData, amount: hasNegative ? '-' : '' });
+      return;
+    }
+
+    // 숫자를 천 단위 구분자로 포맷팅
+    const formatted = parseInt(numbersOnly).toLocaleString('ko-KR');
+    setAdjustmentFormData({
+      ...adjustmentFormData,
+      amount: hasNegative ? `-${formatted}` : formatted
+    });
   };
 
   // 시술 추가
@@ -153,7 +177,10 @@ export default function CalendarTab() {
   const handleSaveAdjustment = async () => {
     if (!selectedDate) return;
 
-    const amount = parseInt(adjustmentFormData.amount);
+    // 쉼표 제거하고 숫자로 변환
+    const cleanedAmount = adjustmentFormData.amount.replace(/,/g, '');
+    const amount = parseInt(cleanedAmount);
+
     if (isNaN(amount) || amount === 0) {
       alert('금액을 입력해주세요. (할인은 음수로 입력)');
       return;
@@ -426,7 +453,7 @@ export default function CalendarTab() {
                 💡 할인은 음수(-)로, 추가금액은 양수(+)로 입력하세요
               </p>
               <p className="text-xs text-yellow-700 mt-1">
-                예: 할인 10,000원 → -10000 입력
+                예: 할인 10,000원 → -10,000 입력
               </p>
             </div>
 
@@ -434,10 +461,10 @@ export default function CalendarTab() {
             <div>
               <label className="block text-sm font-medium mb-2">금액 *</label>
               <input
-                type="number"
+                type="text"
                 value={adjustmentFormData.amount}
-                onChange={(e) => setAdjustmentFormData({ ...adjustmentFormData, amount: e.target.value })}
-                placeholder="-10000 또는 5000"
+                onChange={(e) => handleAmountChange(e.target.value)}
+                placeholder="-10,000 또는 5,000"
                 className="w-full px-4 py-3 border border-divider rounded-lg focus:outline-none focus:ring-2 focus:ring-primary"
               />
             </div>
