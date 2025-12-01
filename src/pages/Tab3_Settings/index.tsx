@@ -42,9 +42,11 @@ export default function SettingsTab() {
   };
 
   const openEditSheet = (treatment: Treatment) => {
+    // 가격을 쉼표 포맷으로 변환
+    const formattedPrice = treatment.price.toLocaleString('ko-KR');
     setFormData({
       name: treatment.name,
-      price: treatment.price.toString(),
+      price: formattedPrice,
       icon: treatment.icon || '',
       color: treatment.color,
     });
@@ -57,9 +59,27 @@ export default function SettingsTab() {
     setEditingTreatment(null);
   };
 
+  // 금액 입력 포맷팅 (쉼표 추가)
+  const handlePriceChange = (value: string) => {
+    // 숫자와 쉼표만 허용
+    const cleaned = value.replace(/[^\d,]/g, '');
+    const numbersOnly = cleaned.replace(/,/g, '');
+
+    if (numbersOnly === '') {
+      setFormData({ ...formData, price: '' });
+      return;
+    }
+
+    // 숫자를 천 단위 구분자로 포맷팅
+    const formatted = parseInt(numbersOnly).toLocaleString('ko-KR');
+    setFormData({ ...formData, price: formatted });
+  };
+
   // 시술 저장
   const handleSave = async () => {
-    const price = parseInt(formData.price);
+    // 쉼표 제거하고 숫자로 변환
+    const cleanedPrice = formData.price.replace(/,/g, '');
+    const price = parseInt(cleanedPrice);
 
     if (!formData.name || !price || price < 0) {
       alert('시술명과 금액을 입력해주세요.');
@@ -215,12 +235,10 @@ export default function SettingsTab() {
           <div>
             <label className="block text-sm font-medium mb-2">금액 *</label>
             <input
-              type="number"
+              type="text"
               value={formData.price}
-              onChange={(e) => setFormData({ ...formData, price: e.target.value })}
-              placeholder="50000"
-              min="0"
-              max="10000000"
+              onChange={(e) => handlePriceChange(e.target.value)}
+              placeholder="50,000"
               className="w-full px-4 py-3 border border-divider rounded-lg focus:outline-none focus:ring-2 focus:ring-primary"
             />
           </div>
