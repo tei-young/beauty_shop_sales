@@ -225,9 +225,9 @@ export default function SettingsTab() {
             />
           </div>
 
-          {/* 이모지 */}
+          {/* 아이콘 */}
           <div>
-            <label className="block text-sm font-medium mb-2">이모지 (선택)</label>
+            <label className="block text-sm font-medium mb-2">아이콘 (선택)</label>
             <div className="relative">
               <input
                 type="text"
@@ -237,7 +237,7 @@ export default function SettingsTab() {
                   setFormData({ ...formData, icon: value.slice(0, 2) });
                 }}
                 onFocus={(e) => e.target.select()}
-                placeholder="탭해서 이모지 입력"
+                placeholder="이모지 또는 글자 입력"
                 className="w-full px-4 py-3 border border-divider rounded-lg focus:outline-none focus:ring-2 focus:ring-primary text-center text-3xl"
               />
               {formData.icon && (
@@ -251,7 +251,7 @@ export default function SettingsTab() {
               )}
             </div>
             <p className="text-xs text-textSecondary mt-1">
-              이모지 키보드를 열어 선택하세요 (선택사항)
+              이모지 또는 2글자 이내 입력 가능
             </p>
           </div>
 
