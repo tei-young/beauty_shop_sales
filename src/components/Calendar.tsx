@@ -56,7 +56,7 @@ export default function Calendar({ currentDate, records, onDateClick }: Calendar
                 transition-all duration-200
                 ${isCurrentMonth ? 'bg-background' : 'bg-gray-50'}
                 ${isCurrentDay ? 'ring-2 ring-primary' : ''}
-                ${hasRecords ? 'hover:bg-blue-50' : 'hover:bg-gray-100'}
+                ${hasRecords ? 'hover:bg-accentHover' : 'hover:bg-gray-100'}
               `}
             >
               {/* 날짜 숫자 */}

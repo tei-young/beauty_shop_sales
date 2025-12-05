@@ -239,7 +239,7 @@ export default function CalendarTab() {
         </div>
 
         {/* 월 총 매출 */}
-        <div className="bg-blue-50 rounded-lg p-3 text-center">
+        <div className="bg-accent rounded-lg p-3 text-center">
           <div className="text-sm text-textSecondary mb-1">월 총 매출</div>
           <div className="text-2xl font-bold text-primary">{formatFullCurrency(monthlyTotal)}</div>
         </div>
@@ -262,7 +262,7 @@ export default function CalendarTab() {
       >
         <div className="space-y-4">
           {/* 일별 총 매출 */}
-          <div className="bg-blue-50 rounded-lg p-4 text-center">
+          <div className="bg-accent rounded-lg p-4 text-center">
             <div className="text-sm text-textSecondary mb-1">일 총 매출</div>
             <div className="text-xl font-bold text-primary">{formatFullCurrency(dailyTotal)}</div>
             {adjustmentTotal !== 0 && (
@@ -276,7 +276,7 @@ export default function CalendarTab() {
           <div className="flex gap-2">
             <button
               onClick={openTreatmentSheet}
-              className="flex-1 flex items-center justify-center gap-2 py-3 bg-primary text-white rounded-lg hover:bg-blue-600 transition-colors"
+              className="flex-1 flex items-center justify-center gap-2 py-3 bg-primary text-white rounded-lg hover:bg-primaryDark transition-colors"
             >
               <Plus size={20} />
               <span>시술 추가</span>
@@ -493,7 +493,7 @@ export default function CalendarTab() {
               <button
                 onClick={handleSaveAdjustment}
                 disabled={addAdjustment.isPending || updateAdjustment.isPending}
-                className="flex-1 px-4 py-3 bg-primary text-white rounded-lg hover:bg-blue-600 transition-colors disabled:opacity-50"
+                className="flex-1 px-4 py-3 bg-primary text-white rounded-lg hover:bg-primaryDark transition-colors disabled:opacity-50"
               >
                 {addAdjustment.isPending || updateAdjustment.isPending ? '저장 중...' : '저장'}
               </button>
