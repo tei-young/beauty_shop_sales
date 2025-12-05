@@ -7,12 +7,13 @@ export default {
   theme: {
     extend: {
       colors: {
-        primary: '#007AFF',
-        background: '#F5F5F7',
+        primary: '#FFA0B9',       // 메인 핑크 배경
+        primaryDark: '#F28AA5',   // 어두운 핑크 음영 (버튼 호버/액티브)
+        background: '#FFF5F8',    // 연한 핑크 배경
         card: '#FFFFFF',
         textPrimary: '#000000',
         textSecondary: '#666666',
-        divider: '#E5E5EA',
+        divider: '#FFE0EB',       // 연한 핑크 구분선
         dim: 'rgba(0, 0, 0, 0.4)',
       },
       fontFamily: {
