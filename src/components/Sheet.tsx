@@ -11,14 +11,14 @@ interface SheetProps {
 
 export default function Sheet({ isOpen, onClose, title, children }: SheetProps) {
   return (
-    <Drawer.Root open={isOpen} onOpenChange={(open) => !open && onClose()}>
+    <Drawer.Root open={isOpen} onOpenChange={(open) => !open && onClose()} snapPoints={[0.5, 0.9]} fadeFromIndex={0}>
       <Drawer.Portal>
         <Drawer.Overlay className="fixed inset-0 bg-black/40 z-50" />
         <Drawer.Content
           className="
             fixed bottom-0 left-0 right-0 z-50
             bg-white rounded-t-2xl
-            max-h-[90vh] flex flex-col
+            h-[90vh] flex flex-col
             outline-none
           "
         >
