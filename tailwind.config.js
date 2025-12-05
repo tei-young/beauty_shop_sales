@@ -13,7 +13,7 @@ export default {
         primaryLight: '#FFCFDD',  // 연한 핑크 - 배지, 칩
 
         // 브라운 계열 (메인 컬러)
-        accent: '#C9A88E',        // 태닝 브라운 - 매출 카드
+        accent: '#FBF9F7',        // 거의 화이트 - 매출 카드
         accentDark: '#7C5E4A',    // 다크 브라운 - 강조
         accentLight: '#F5E6D3',   // 밀크 베이지
         accentHover: '#B89A7D',   // 호버 브라운
@@ -48,3 +48,5 @@ export default {
   },
   plugins: [],
 }
+
+
