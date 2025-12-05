@@ -7,7 +7,7 @@ export default {
   theme: {
     extend: {
       colors: {
-        // 핑크 계열 (메인 브랜드)
+        // 핑크 계열 (액션 요소)
         primary: '#FFA0B9',       // 메인 핑크 - 버튼
         primaryDark: '#F28AA5',   // 어두운 핑크 - 버튼 호버
         primaryLight: '#FFCFDD',  // 연한 핑크 - 배지, 칩
@@ -16,18 +16,18 @@ export default {
         background: '#FFF5F8',    // 연한 핑크 배경
         card: '#FFFFFF',          // 화이트 카드
 
-        // 브라운/베이지 계열 (은은하게)
-        accent: '#F5E6D3',        // 밀크 베이지 - 매출 카드
-        accentLight: '#FEFAF7',   // 아이보리
-        accentHover: '#E0CDB8',   // 피치 베이지 - 호버
+        // 브라운/베이지 계열 (균형있게 적용)
+        accent: '#E0CDB8',        // 피치 베이지 - 매출 카드
+        accentLight: '#F5E6D3',   // 밀크 베이지
+        accentHover: '#D4BFA6',   // 진한 피치 베이지 - 호버
 
-        // 텍스트 (약간의 브라운 틴트)
+        // 텍스트 (브라운 강조)
         textPrimary: '#2C2420',   // 브라운 블랙
-        textSecondary: '#8B7355', // 모카 브라운
-        textTertiary: '#A0826D',  // 연한 모카
+        textSecondary: '#7C5E4A', // 다크 브라운
+        textTertiary: '#A0826D',  // 모카 브라운
 
         // 기타
-        divider: '#FFE0EB',       // 연한 핑크 구분선
+        divider: '#E8D5C4',       // 베이지 구분선
         dim: 'rgba(0, 0, 0, 0.4)',
       },
       fontFamily: {
