@@ -16,18 +16,18 @@ export default {
         background: '#FFF5F8',    // 연한 핑크 배경
         card: '#FFFFFF',          // 화이트 카드
 
-        // 브라운/베이지 계열 (매우 연하게, 거의 화이트)
-        accent: '#FBF9F7',        // 거의 화이트에 가까운 아이보리 - 매출 카드
-        accentLight: '#FFFBF9',   // 거의 순백에 가까운 아이보리
-        accentHover: '#F5F2EF',   // 매우 연한 베이지 - 호버
+        // 브라운/베이지 계열 (은은하게)
+        accent: '#F5E6D3',        // 밀크 베이지 - 매출 카드
+        accentLight: '#FEFAF7',   // 아이보리
+        accentHover: '#E0CDB8',   // 피치 베이지 - 호버
 
-        // 텍스트 (브라운 틴트 매우 약하게)
-        textPrimary: '#1A1A1A',   // 거의 블랙
-        textSecondary: '#666666', // 회색 (브라운 틴트 최소화)
-        textTertiary: '#999999',  // 연한 회색
+        // 텍스트 (약간의 브라운 틴트)
+        textPrimary: '#2C2420',   // 브라운 블랙
+        textSecondary: '#8B7355', // 모카 브라운
+        textTertiary: '#A0826D',  // 연한 모카
 
         // 기타
-        divider: '#F5F2EF',       // 매우 연한 베이지 구분선
+        divider: '#FFE0EB',       // 연한 핑크 구분선
         dim: 'rgba(0, 0, 0, 0.4)',
       },
       fontFamily: {
