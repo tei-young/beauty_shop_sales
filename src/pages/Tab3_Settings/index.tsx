@@ -152,7 +152,7 @@ export default function SettingsTab() {
           <h2 className="text-lg font-semibold">시술 관리</h2>
           <button
             onClick={openAddSheet}
-            className="flex items-center gap-2 px-4 py-2 bg-primary text-white rounded-lg hover:bg-blue-600 transition-colors"
+            className="flex items-center gap-2 px-4 py-2 bg-primary text-white rounded-lg hover:bg-primaryDark transition-colors"
           >
             <Plus size={20} />
             <span>추가</span>
@@ -293,7 +293,7 @@ export default function SettingsTab() {
             <button
               onClick={handleSave}
               disabled={addTreatment.isPending || updateTreatment.isPending}
-              className="flex-1 px-4 py-3 bg-primary text-white rounded-lg hover:bg-blue-600 transition-colors disabled:opacity-50"
+              className="flex-1 px-4 py-3 bg-primary text-white rounded-lg hover:bg-primaryDark transition-colors disabled:opacity-50"
             >
               {addTreatment.isPending || updateTreatment.isPending ? '저장 중...' : '저장'}
             </button>

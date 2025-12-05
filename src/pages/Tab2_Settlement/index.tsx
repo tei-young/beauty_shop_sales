@@ -164,7 +164,7 @@ export default function SettlementTab() {
           <h2 className="text-lg font-semibold">결산 결과</h2>
 
           {/* 월 매출 */}
-          <div className="bg-blue-50 rounded-lg p-4">
+          <div className="bg-accent rounded-lg p-4">
             <div className="text-sm text-textSecondary mb-1">💰 월 매출</div>
             <div className="text-2xl font-bold text-primary">{formatFullCurrency(monthlyRevenue)}</div>
           </div>
@@ -195,7 +195,7 @@ export default function SettlementTab() {
             <h2 className="text-lg font-semibold">지출 관리</h2>
             <button
               onClick={openAddCategorySheet}
-              className="flex items-center gap-1 px-3 py-2 text-sm bg-primary text-white rounded-lg hover:bg-blue-600 transition-colors"
+              className="flex items-center gap-1 px-3 py-2 text-sm bg-primary text-white rounded-lg hover:bg-primaryDark transition-colors"
             >
               <Plus size={16} />
               <span>항목 추가</span>
@@ -293,7 +293,7 @@ export default function SettlementTab() {
             <button
               onClick={handleSaveExpense}
               disabled={upsertExpense.isPending}
-              className="flex-1 px-4 py-3 bg-primary text-white rounded-lg hover:bg-blue-600 transition-colors disabled:opacity-50"
+              className="flex-1 px-4 py-3 bg-primary text-white rounded-lg hover:bg-primaryDark transition-colors disabled:opacity-50"
             >
               {upsertExpense.isPending ? '저장 중...' : '저장'}
             </button>
@@ -353,7 +353,7 @@ export default function SettlementTab() {
             <button
               onClick={handleSaveCategory}
               disabled={addCategory.isPending || updateCategory.isPending}
-              className="flex-1 px-4 py-3 bg-primary text-white rounded-lg hover:bg-blue-600 transition-colors disabled:opacity-50"
+              className="flex-1 px-4 py-3 bg-primary text-white rounded-lg hover:bg-primaryDark transition-colors disabled:opacity-50"
             >
               {addCategory.isPending || updateCategory.isPending ? '저장 중...' : '저장'}
             </button>
