@@ -17,7 +17,7 @@ export default {
         card: '#FFFFFF',          // 화이트 카드
 
         // 브라운 계열 (메인 컬러)
-        accent: '#C9A88E',        // 태닝 브라운 - 매출 카드
+        accent: '#FBF9F7',        // 거의 화이트 - 매출 카드
         accentLight: '#F5E6D3',   // 밀크 베이지
         accentHover: '#B89A7D',   // 호버 브라운
 
