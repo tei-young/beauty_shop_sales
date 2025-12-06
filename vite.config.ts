@@ -10,8 +10,8 @@ export default defineConfig({
       registerType: 'autoUpdate',
       includeAssets: ['favicon.ico', 'apple-touch-icon.png', 'mask-icon.svg'],
       manifest: {
-        name: 'KI계부',
-        short_name: 'KI계부',
+        name: 'KIMUU',
+        short_name: 'KIMUU',
         description: '개인 뷰티샵 매출 관리 앱',
         theme_color: '#FFA0B9',
         background_color: '#FEFAF7',
