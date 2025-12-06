@@ -1,73 +1,166 @@
-# React + TypeScript + Vite
+# 뷰티샵 매출 관리 앱
 
-This template provides a minimal setup to get React working in Vite with HMR and some ESLint rules.
+> 개인 뷰티샵(네일, 속눈썹 등)의 일별 시술 기록과 월별 결산을 관리하는 PWA 애플리케이션
 
-Currently, two official plugins are available:
+## 📱 주요 기능
 
-- [@vitejs/plugin-react](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react) uses [Babel](https://babeljs.io/) (or [oxc](https://oxc.rs) when used in [rolldown-vite](https://vite.dev/guide/rolldown)) for Fast Refresh
-- [@vitejs/plugin-react-swc](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react-swc) uses [SWC](https://swc.rs/) for Fast Refresh
+### 1️⃣ 캘린더 탭
+- **월별 캘린더 뷰**: 일별 매출 금액 표시
+- **월 총 매출**: 상단에 한눈에 표시
+- **일별 상세 기록**:
+  - 시술 추가 (시술별 색상, 아이콘, 가격)
+  - 시술 수량 조절 (증가/감소)
+  - 조정 금액 (할인/추가금액) 입력
 
-## React Compiler
+### 2️⃣ 결산 탭
+- **월별 매출**: 총 시술 매출 표시
+- **총 지출**: 카테고리별 지출 관리
+- **순이익 계산**: 매출 - 지출
+- **지출 카테고리 관리**: 이모지와 함께 항목 추가/수정/삭제
 
-The React Compiler is not enabled on this template because of its impact on dev & build performances. To add it, see [this documentation](https://react.dev/learn/react-compiler/installation).
+### 3️⃣ 설정 탭
+- **시술 관리**: 시술 항목 추가/수정/삭제
+- **시술 커스터마이징**: 이름, 가격, 색상, 이모지 설정
+- **데이터 관리**: 전체 데이터 내보내기/불러오기 (JSON)
 
-## Expanding the ESLint configuration
+## 🎨 디자인 시스템
 
-If you are developing a production application, we recommend updating the configuration to enable type-aware lint rules:
+### 컬러 테마
+- **핑크 계열** (포인트 컬러):
+  - Primary: `#FFA0B9` - 메인 핑크 (버튼)
+  - Primary Dark: `#F28AA5` - 어두운 핑크 (호버)
+  - Primary Light: `#FFCFDD` - 연한 핑크 (배지, 칩)
 
-```js
-export default defineConfig([
-  globalIgnores(['dist']),
-  {
-    files: ['**/*.{ts,tsx}'],
-    extends: [
-      // Other configs...
+- **브라운 계열** (메인 컬러):
+  - Accent: `#FBF9F7` - 거의 화이트 (매출 카드)
+  - Accent Dark: `#7C5E4A` - 다크 브라운 (강조)
+  - Accent Light: `#F5E6D3` - 밀크 베이지
+  - Accent Hover: `#B89A7D` - 호버 브라운
 
-      // Remove tseslint.configs.recommended and replace with this
-      tseslint.configs.recommendedTypeChecked,
-      // Alternatively, use this for stricter rules
-      tseslint.configs.strictTypeChecked,
-      // Optionally, add this for stylistic rules
-      tseslint.configs.stylisticTypeChecked,
+- **배경**:
+  - Background: `#FEFAF7` - 아이보리 배경
+  - Card: `#FFFFFF` - 화이트 카드
+  - Highlight: `#F5E6D3` - 밀크 베이지 하이라이트
 
-      // Other configs...
-    ],
-    languageOptions: {
-      parserOptions: {
-        project: ['./tsconfig.node.json', './tsconfig.app.json'],
-        tsconfigRootDir: import.meta.dirname,
-      },
-      // other options...
-    },
-  },
-])
+- **텍스트**:
+  - Text Primary: `#2C2420` - 브라운 블랙
+  - Text Secondary: `#7C5E4A` - 다크 브라운
+  - Text Tertiary: `#A0826D` - 모카 브라운
+  - Text Accent: `#FFA0B9` - 핑크 강조
+
+## 🛠️ 기술 스택
+
+### Frontend
+- **React 19** - UI 라이브러리
+- **TypeScript** - 타입 안정성
+- **Vite** - 빌드 도구
+- **Tailwind CSS** - 스타일링
+- **date-fns** - 날짜 처리
+- **lucide-react** - 아이콘
+- **vaul** - 바텀시트 드로워
+
+### Backend & Database
+- **Supabase** - PostgreSQL + Auth + Storage
+- **@tanstack/react-query** - 서버 상태 관리
+
+### PWA
+- **vite-plugin-pwa** - PWA 설정
+- **workbox** - 서비스 워커
+
+## 📦 설치 및 실행
+
+```bash
+# 의존성 설치
+npm install
+
+# 개발 서버 실행
+npm run dev
+
+# 프로덕션 빌드
+npm run build
+
+# 프리뷰
+npm run preview
 ```
 
-You can also install [eslint-plugin-react-x](https://github.com/Rel1cx/eslint-react/tree/main/packages/plugins/eslint-plugin-react-x) and [eslint-plugin-react-dom](https://github.com/Rel1cx/eslint-react/tree/main/packages/plugins/eslint-plugin-react-dom) for React-specific lint rules:
+## 🗄️ 데이터베이스 스키마
 
-```js
-// eslint.config.js
-import reactX from 'eslint-plugin-react-x'
-import reactDom from 'eslint-plugin-react-dom'
+### treatments (시술 항목)
+- `id`: UUID (PK)
+- `name`: 시술명
+- `price`: 가격
+- `color`: 색상 코드
+- `icon`: 이모지
+- `order`: 정렬 순서
 
-export default defineConfig([
-  globalIgnores(['dist']),
-  {
-    files: ['**/*.{ts,tsx}'],
-    extends: [
-      // Other configs...
-      // Enable lint rules for React
-      reactX.configs['recommended-typescript'],
-      // Enable lint rules for React DOM
-      reactDom.configs.recommended,
-    ],
-    languageOptions: {
-      parserOptions: {
-        project: ['./tsconfig.node.json', './tsconfig.app.json'],
-        tsconfigRootDir: import.meta.dirname,
-      },
-      // other options...
-    },
-  },
-])
-```
+### daily_records (일별 시술 기록)
+- `id`: UUID (PK)
+- `date`: 날짜 (YYYY-MM-DD)
+- `treatment_id`: 시술 FK
+- `count`: 수량
+- `total_amount`: 총 금액
+
+### daily_adjustments (일별 조정)
+- `id`: UUID (PK)
+- `date`: 날짜
+- `amount`: 금액 (음수=할인, 양수=추가)
+- `reason`: 사유
+
+### expense_categories (지출 항목)
+- `id`: UUID (PK)
+- `name`: 항목명
+- `icon`: 이모지
+- `order`: 정렬 순서
+
+### monthly_expenses (월별 지출)
+- `id`: UUID (PK)
+- `year_month`: 년월 (YYYY-MM)
+- `category_id`: 항목 FK
+- `amount`: 금액
+
+## 🔒 보안
+
+### 현재 (단일 사용자)
+- RLS (Row Level Security) 활성화
+- anon 키로 모든 데이터 접근 허용
+- 개인 사용 목적으로 적합
+
+### 향후 (멀티 테넌트)
+- 구현 계획은 [MULTI_TENANT_IMPLEMENTATION.md](./MULTI_TENANT_IMPLEMENTATION.md) 참고
+- Google OAuth 인증
+- `user_id` 기반 데이터 격리
+- RLS 정책을 `authenticated` + `user_id` 검증으로 전환
+
+## 📝 최근 업데이트
+
+### 2025-12-05
+#### Sheet 컴포넌트 개선 (vaul 라이브러리)
+- ✅ 드래그로 바텀시트 확장/축소 기능 추가
+- ✅ snapPoints [0.5, 0.9] 적용 (초기 50%, 최대 90%)
+- ✅ 시술 내역이 적어도 내부 스크롤 가능
+- ✅ 뒤쪽 캘린더에 터치 이벤트 전달 차단
+
+#### 컬러 테마 정리
+- ✅ tailwind.config.js conflict 해결
+- ✅ accent 색상 #FBF9F7 (거의 화이트) 최종 선택
+- ✅ main 브랜치 추가 컬러 병합 (accentDark, highlight, textAccent)
+
+### 이전 업데이트
+- 2025-11-XX: 핑크-브라운 컬러 테마 전면 리팩토링
+- 2025-11-XX: 멀티 테넌트 구현 계획 문서화
+- 2025-11-XX: Supabase RLS 보안 설정
+
+## 🚀 배포
+
+- Vercel / Netlify 등에서 정적 사이트 호스팅
+- 환경 변수 설정 필요:
+  - `VITE_SUPABASE_URL`
+  - `VITE_SUPABASE_ANON_KEY`
+
+## 📄 라이센스
+
+개인 프로젝트
+
+## 👤 작성자
+
+tei-young
