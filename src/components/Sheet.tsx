@@ -24,9 +24,10 @@ export default function Sheet({ isOpen, onClose, title, children }: SheetProps) 
           className="
             fixed bottom-0 left-0 right-0 z-50
             bg-white rounded-t-2xl
-            h-[90vh] flex flex-col
+            flex flex-col
             outline-none
           "
+          style={{ height: '90dvh' }}
         >
           {/* 드래그 핸들 */}
           <div className="sticky top-0 bg-white pt-2 pb-3 px-4 border-b border-divider flex-shrink-0">
