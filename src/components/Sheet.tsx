@@ -45,7 +45,7 @@ export default function Sheet({ isOpen, onClose, title, children }: SheetProps) 
           </div>
 
           {/* 콘텐츠 - 스크롤 가능 영역 */}
-          <div className="p-4 overflow-y-auto flex-1">
+          <div className="p-4 overflow-y-auto flex-1" data-vaul-no-drag>
             {children}
           </div>
         </Drawer.Content>
