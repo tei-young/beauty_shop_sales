@@ -273,6 +273,7 @@ export default function SettlementTab() {
               type="number"
               value={expenseAmount}
               onChange={(e) => setExpenseAmount(e.target.value)}
+              onFocus={(e) => e.target.focus({ preventScroll: true })}
               placeholder="0"
               min="0"
               className="w-full px-4 py-3 border border-divider rounded-lg focus:outline-none focus:ring-2 focus:ring-primary text-xl text-center"
@@ -315,6 +316,7 @@ export default function SettlementTab() {
               type="text"
               value={categoryFormData.name}
               onChange={(e) => setCategoryFormData({ ...categoryFormData, name: e.target.value })}
+              onFocus={(e) => e.target.focus({ preventScroll: true })}
               placeholder="예: 월세"
               maxLength={20}
               className="w-full px-4 py-3 border border-divider rounded-lg focus:outline-none focus:ring-2 focus:ring-primary"
@@ -334,6 +336,7 @@ export default function SettlementTab() {
                 ).join('');
                 setCategoryFormData({ ...categoryFormData, icon: filtered.slice(0, 2) });
               }}
+              onFocus={(e) => e.target.focus({ preventScroll: true })}
               placeholder="🏠"
               className="w-full px-4 py-3 border border-divider rounded-lg focus:outline-none focus:ring-2 focus:ring-primary text-center text-3xl"
             />
