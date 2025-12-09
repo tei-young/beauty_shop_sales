@@ -15,6 +15,7 @@ export default function Sheet({ isOpen, onClose, title, children }: SheetProps) 
       open={isOpen}
       onOpenChange={(open) => !open && onClose()}
       snapPoints={[0.5, 0.9]}
+      activeSnapPoint={0.9}
       fadeFromIndex={0}
       modal={true}
     >
