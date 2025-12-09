@@ -225,6 +225,7 @@ export default function SettingsTab() {
               type="text"
               value={formData.name}
               onChange={(e) => setFormData({ ...formData, name: e.target.value })}
+              onFocus={(e) => e.target.focus({ preventScroll: true })}
               placeholder="예: 네일아트"
               maxLength={30}
               className="w-full px-4 py-3 border border-divider rounded-lg focus:outline-none focus:ring-2 focus:ring-primary"
@@ -238,6 +239,7 @@ export default function SettingsTab() {
               type="text"
               value={formData.price}
               onChange={(e) => handlePriceChange(e.target.value)}
+              onFocus={(e) => e.target.focus({ preventScroll: true })}
               placeholder="50,000"
               className="w-full px-4 py-3 border border-divider rounded-lg focus:outline-none focus:ring-2 focus:ring-primary"
             />
@@ -254,7 +256,10 @@ export default function SettingsTab() {
                   const value = e.target.value;
                   setFormData({ ...formData, icon: value.slice(0, 2) });
                 }}
-                onFocus={(e) => e.target.select()}
+                onFocus={(e) => {
+                  e.target.focus({ preventScroll: true });
+                  e.target.select();
+                }}
                 placeholder="이모지 또는 글자 입력"
                 className="w-full px-4 py-3 border border-divider rounded-lg focus:outline-none focus:ring-2 focus:ring-primary text-center text-3xl"
               />
