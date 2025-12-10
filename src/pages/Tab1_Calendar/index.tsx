@@ -259,7 +259,7 @@ export default function CalendarTab() {
         isOpen={selectedDate !== null}
         onClose={closeDailySheet}
         title={selectedDate ? formatDisplayDate(selectedDate) : ''}
-        initialSnapIndex={1}
+        disableDrag={true}
         isInBackground={isTreatmentSheetOpen || isAdjustmentSheetOpen}
       >
         <div className="space-y-4">
