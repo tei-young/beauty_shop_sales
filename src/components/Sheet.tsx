@@ -50,14 +50,14 @@ export default function Sheet({ isOpen, onClose, title, children, disableDrag = 
       >
         {/* 백그라운드 딤 */}
         <div
-          className="absolute inset-0 bg-black/40"
+          className="absolute inset-0 bg-black/40 z-0"
           onClick={onClose}
         />
 
         {/* Sheet 콘텐츠 */}
         <div
           className={`
-            absolute bottom-0 left-0 right-0
+            absolute bottom-0 left-0 right-0 z-10
             bg-white rounded-t-2xl
             max-h-[90vh] overflow-y-auto
             transition-transform duration-300 ease-out
@@ -98,7 +98,7 @@ export default function Sheet({ isOpen, onClose, title, children, disableDrag = 
       modal={true}
     >
       <Drawer.Portal>
-        <Drawer.Overlay className="fixed inset-0 bg-black/40" style={{ zIndex }} />
+        <Drawer.Overlay className="fixed inset-0 bg-black/40" style={{ zIndex: zIndex }} />
         <Drawer.Content
           className="
             fixed bottom-0 left-0 right-0
@@ -106,7 +106,7 @@ export default function Sheet({ isOpen, onClose, title, children, disableDrag = 
             flex flex-col
             outline-none
           "
-          style={{ zIndex }}
+          style={{ zIndex: zIndex + 1 }}
         >
           {/* 드래그 핸들 */}
           <div className="sticky top-0 bg-white pt-2 pb-3 px-4 border-b border-divider flex-shrink-0">
