@@ -10,9 +10,10 @@ interface SheetProps {
   children: ReactNode;
   disableDrag?: boolean; // true면 순수 CSS 방식 (입력 안정), false면 vaul 드래그 기능
   initialSnapIndex?: number; // vaul 사용 시 초기 snapPoint 인덱스 (0=50%, 1=90%)
+  zIndex?: number; // z-index 레벨 (기본값: 50, Layer 3는 60 사용)
 }
 
-export default function Sheet({ isOpen, onClose, title, children, disableDrag = false, initialSnapIndex = 0 }: SheetProps) {
+export default function Sheet({ isOpen, onClose, title, children, disableDrag = false, initialSnapIndex = 0, zIndex = 50 }: SheetProps) {
   const [isAnimating, setIsAnimating] = useState(false);
   const snapPoints = [0.5, 0.9];
   const activeSnap = snapPoints[initialSnapIndex];
@@ -41,10 +42,11 @@ export default function Sheet({ isOpen, onClose, title, children, disableDrag = 
     return (
       <div
         className={`
-          fixed inset-0 z-50
+          fixed inset-0
           transition-all duration-300
           ${isOpen ? 'opacity-100' : 'opacity-0'}
         `}
+        style={{ zIndex }}
       >
         {/* 백그라운드 딤 */}
         <div
@@ -96,14 +98,15 @@ export default function Sheet({ isOpen, onClose, title, children, disableDrag = 
       modal={true}
     >
       <Drawer.Portal>
-        <Drawer.Overlay className="fixed inset-0 bg-black/40 z-50" />
+        <Drawer.Overlay className="fixed inset-0 bg-black/40" style={{ zIndex }} />
         <Drawer.Content
           className="
-            fixed bottom-0 left-0 right-0 z-50
+            fixed bottom-0 left-0 right-0
             bg-white rounded-t-2xl
             flex flex-col
             outline-none
           "
+          style={{ zIndex }}
         >
           {/* 드래그 핸들 */}
           <div className="sticky top-0 bg-white pt-2 pb-3 px-4 border-b border-divider flex-shrink-0">
