@@ -417,6 +417,7 @@ export default function CalendarTab() {
           onClose={() => setIsTreatmentSheetOpen(false)}
           title="시술 선택"
           initialSnapIndex={1}
+          zIndex={60}
         >
           <div className="grid grid-cols-3 gap-3">
             {treatments.map((treatment) => (
@@ -448,6 +449,7 @@ export default function CalendarTab() {
           onClose={closeAdjustmentSheet}
           title={editingAdjustment ? '조정 수정' : '조정 추가'}
           disableDrag={true}
+          zIndex={60}
         >
           <div className="space-y-6">
             {/* 안내 메시지 */}
