@@ -9,10 +9,13 @@ interface SheetProps {
   title: string;
   children: ReactNode;
   disableDrag?: boolean; // true면 순수 CSS 방식 (입력 안정), false면 vaul 드래그 기능
+  initialSnapIndex?: number; // vaul 사용 시 초기 snapPoint 인덱스 (0=50%, 1=90%)
 }
 
-export default function Sheet({ isOpen, onClose, title, children, disableDrag = false }: SheetProps) {
+export default function Sheet({ isOpen, onClose, title, children, disableDrag = false, initialSnapIndex = 0 }: SheetProps) {
   const [isAnimating, setIsAnimating] = useState(false);
+  const snapPoints = [0.5, 0.9];
+  const activeSnap = snapPoints[initialSnapIndex];
 
   useEffect(() => {
     if (isOpen) {
@@ -86,7 +89,8 @@ export default function Sheet({ isOpen, onClose, title, children, disableDrag = 
     <Drawer.Root
       open={isOpen}
       onOpenChange={(open) => !open && onClose()}
-      snapPoints={[0.5, 0.9]}
+      snapPoints={snapPoints}
+      activeSnapPoint={activeSnap}
       fadeFromIndex={0}
       dismissible={true}
       modal={true}
