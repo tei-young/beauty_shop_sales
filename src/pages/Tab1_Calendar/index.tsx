@@ -445,6 +445,7 @@ export default function CalendarTab() {
           isOpen={isAdjustmentSheetOpen}
           onClose={closeAdjustmentSheet}
           title={editingAdjustment ? '조정 수정' : '조정 추가'}
+          disableDrag={true}
         >
           <div className="space-y-6">
             {/* 안내 메시지 */}
@@ -464,7 +465,6 @@ export default function CalendarTab() {
                 type="text"
                 value={adjustmentFormData.amount}
                 onChange={(e) => handleAmountChange(e.target.value)}
-                onFocus={(e) => e.target.focus({ preventScroll: true })}
                 placeholder="-10,000 또는 5,000"
                 className="w-full px-4 py-3 border border-divider rounded-lg focus:outline-none focus:ring-2 focus:ring-primary"
               />
@@ -477,7 +477,6 @@ export default function CalendarTab() {
                 type="text"
                 value={adjustmentFormData.reason}
                 onChange={(e) => setAdjustmentFormData({ ...adjustmentFormData, reason: e.target.value })}
-                onFocus={(e) => e.target.focus({ preventScroll: true })}
                 placeholder="예: 단체 할인, 팁"
                 maxLength={50}
                 className="w-full px-4 py-3 border border-divider rounded-lg focus:outline-none focus:ring-2 focus:ring-primary"
