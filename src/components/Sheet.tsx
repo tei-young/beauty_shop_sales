@@ -1,3 +1,4 @@
+import { useEffect, useState } from 'react';
 import type { ReactNode } from 'react';
 import { Drawer } from 'vaul';
 import { X } from 'lucide-react';
@@ -7,24 +8,100 @@ interface SheetProps {
   onClose: () => void;
   title: string;
   children: ReactNode;
-  disableDrag?: boolean; // true면 드래그 비활성화, 90% 고정
+  disableDrag?: boolean; // true면 순수 CSS 방식 (입력 안정), false면 vaul 드래그 기능
 }
 
 export default function Sheet({ isOpen, onClose, title, children, disableDrag = false }: SheetProps) {
-  const content = (
-    <Drawer.Portal>
-      <Drawer.Overlay className="fixed inset-0 bg-black/40 z-50" />
-      <Drawer.Content
-        className="
-          fixed bottom-0 left-0 right-0 z-50
-          bg-white rounded-t-2xl
-          flex flex-col
-          outline-none
-        "
-        style={{ height: disableDrag ? '90vh' : undefined }}
+  const [isAnimating, setIsAnimating] = useState(false);
+
+  useEffect(() => {
+    if (isOpen) {
+      setIsAnimating(true);
+      // disableDrag일 때만 바디 스크롤 막기 (vaul은 자체적으로 처리함)
+      if (disableDrag) {
+        document.body.style.overflow = 'hidden';
+      }
+    } else {
+      // 애니메이션 후 제거
+      const timer = setTimeout(() => setIsAnimating(false), 300);
+      if (disableDrag) {
+        document.body.style.overflow = 'auto';
+      }
+      return () => clearTimeout(timer);
+    }
+  }, [isOpen, disableDrag]);
+
+  // disableDrag={true}: 순수 CSS 방식 (이전 안정적인 방식)
+  if (disableDrag) {
+    if (!isOpen && !isAnimating) return null;
+
+    return (
+      <div
+        className={`
+          fixed inset-0 z-50
+          transition-all duration-300
+          ${isOpen ? 'opacity-100' : 'opacity-0'}
+        `}
       >
-        {/* 드래그 핸들 - disableDrag일 때는 숨김 */}
-        {!disableDrag && (
+        {/* 백그라운드 딤 */}
+        <div
+          className="absolute inset-0 bg-black/40"
+          onClick={onClose}
+        />
+
+        {/* Sheet 콘텐츠 */}
+        <div
+          className={`
+            absolute bottom-0 left-0 right-0
+            bg-white rounded-t-2xl
+            max-h-[90vh] overflow-y-auto
+            transition-transform duration-300 ease-out
+            ${isOpen ? 'translate-y-0' : 'translate-y-full'}
+          `}
+        >
+          {/* 헤더 */}
+          <div className="sticky top-0 bg-white pt-4 pb-3 px-4 border-b border-divider">
+            <div className="flex items-center justify-between">
+              <h2 className="text-xl font-semibold">{title}</h2>
+              <button
+                onClick={onClose}
+                className="p-2 hover:bg-gray-100 rounded-full transition-colors"
+              >
+                <X size={24} />
+              </button>
+            </div>
+          </div>
+
+          {/* 콘텐츠 */}
+          <div className="p-4">
+            {children}
+          </div>
+        </div>
+      </div>
+    );
+  }
+
+  // disableDrag={false}: vaul 드래그 방식 (조회용)
+  return (
+    <Drawer.Root
+      open={isOpen}
+      onOpenChange={(open) => !open && onClose()}
+      snapPoints={[0.5, 0.9]}
+      fadeFromIndex={0}
+      dismissible={true}
+      modal={true}
+    >
+      <Drawer.Portal>
+        <Drawer.Overlay className="fixed inset-0 bg-black/40 z-50" />
+        <Drawer.Content
+          className="
+            fixed bottom-0 left-0 right-0 z-50
+            bg-white rounded-t-2xl
+            flex flex-col
+            outline-none
+          "
+        >
+          {/* 드래그 핸들 */}
           <div className="sticky top-0 bg-white pt-2 pb-3 px-4 border-b border-divider flex-shrink-0">
             <div className="w-12 h-1 bg-gray-300 rounded-full mx-auto mb-4" />
 
@@ -39,50 +116,13 @@ export default function Sheet({ isOpen, onClose, title, children, disableDrag = 
               </button>
             </div>
           </div>
-        )}
 
-        {/* disableDrag일 때는 헤더 따로 표시 */}
-        {disableDrag && (
-          <div className="sticky top-0 bg-white pt-4 pb-3 px-4 border-b border-divider flex-shrink-0">
-            <div className="flex items-center justify-between">
-              <Drawer.Title className="text-xl font-semibold">{title}</Drawer.Title>
-              <button
-                onClick={onClose}
-                className="p-2 hover:bg-gray-100 rounded-full transition-colors"
-              >
-                <X size={24} />
-              </button>
-            </div>
+          {/* 콘텐츠 - 스크롤 가능 영역 */}
+          <div className="p-4 overflow-y-auto flex-1" data-vaul-no-drag>
+            {children}
           </div>
-        )}
-
-        {/* 콘텐츠 - 스크롤 가능 영역 */}
-        <div className="p-4 overflow-y-auto flex-1" data-vaul-no-drag>
-          {children}
-        </div>
-      </Drawer.Content>
-    </Drawer.Portal>
-  );
-
-  return disableDrag ? (
-    <Drawer.Root
-      open={isOpen}
-      onOpenChange={(open) => !open && onClose()}
-      dismissible={false}
-      modal={true}
-    >
-      {content}
-    </Drawer.Root>
-  ) : (
-    <Drawer.Root
-      open={isOpen}
-      onOpenChange={(open) => !open && onClose()}
-      snapPoints={[0.5, 0.9]}
-      fadeFromIndex={0}
-      dismissible={true}
-      modal={true}
-    >
-      {content}
+        </Drawer.Content>
+      </Drawer.Portal>
     </Drawer.Root>
   );
 }
