@@ -259,6 +259,7 @@ export default function CalendarTab() {
         isOpen={selectedDate !== null}
         onClose={closeDailySheet}
         title={selectedDate ? formatDisplayDate(selectedDate) : ''}
+        initialSnapIndex={1}
       >
         <div className="space-y-4">
           {/* 일별 총 매출 */}
@@ -415,6 +416,7 @@ export default function CalendarTab() {
           isOpen={isTreatmentSheetOpen}
           onClose={() => setIsTreatmentSheetOpen(false)}
           title="시술 선택"
+          initialSnapIndex={1}
         >
           <div className="grid grid-cols-3 gap-3">
             {treatments.map((treatment) => (
