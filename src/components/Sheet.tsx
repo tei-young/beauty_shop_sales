@@ -61,13 +61,14 @@ export default function Sheet({ isOpen, onClose, title, children, disableDrag = 
           className={`
             absolute bottom-0 left-0 right-0 z-10
             bg-white rounded-t-2xl
-            max-h-[90vh] overflow-y-auto
+            h-[90vh]
+            flex flex-col
             transition-transform duration-300 ease-out
             ${isOpen ? 'translate-y-0' : 'translate-y-full'}
           `}
         >
           {/* 헤더 */}
-          <div className="sticky top-0 bg-white pt-4 pb-3 px-4 border-b border-divider">
+          <div className="flex-shrink-0 sticky top-0 bg-white pt-4 pb-3 px-4 border-b border-divider">
             <div className="flex items-center justify-between">
               <h2 className="text-xl font-semibold">{title}</h2>
               <button
@@ -79,8 +80,8 @@ export default function Sheet({ isOpen, onClose, title, children, disableDrag = 
             </div>
           </div>
 
-          {/* 콘텐츠 */}
-          <div className="p-4">
+          {/* 콘텐츠 - 스크롤 가능 영역 */}
+          <div className="flex-1 overflow-y-auto p-4">
             {children}
           </div>
         </div>
