@@ -2,6 +2,67 @@
 
 모든 주요 변경사항은 이 파일에 기록됩니다.
 
+## [2025-12-12] - Sheet 컴포넌트 입력 안정성 개선 및 vaul 제거
+
+### Problem
+- 모바일 키보드 나타날 때 Sheet가 아래로 내려갔다가 다시 올라오는 문제
+- Layer 간섭으로 인한 입력 필드 포커스 불가 문제
+- 시술 선택 Sheet 높이 부족 문제
+
+### Solution Attempts
+1. **옵션 A (dvh/activeSnapPoint)**: vaul의 동적 높이 조정 → 버그 발생, 롤백
+2. **옵션 B (preventScroll)**: input 필드에 preventScroll 적용 → 효과 없음, 롤백
+3. **옵션 C (disableDrag prop)**: 입력 Sheet만 순수 CSS 방식 → vaul modal이 터치 가로챔, 실패
+4. **옵션 D (하이브리드)**: 입력은 순수 CSS, 조회는 vaul → Layer 간섭 문제 지속
+5. **옵션 A (최종)**: 모든 Sheet를 순수 CSS 방식으로 전환 ✅ 성공
+
+### Changed
+- **Sheet 컴포넌트 이원화**:
+  - `disableDrag={true}`: 순수 CSS 방식 (90% 고정 높이, 입력 안정)
+  - `disableDrag={false}`: vaul 드래그 방식 (현재 미사용)
+
+- **모든 Sheet에 disableDrag={true} 적용**:
+  - Tab1_Calendar: 일별 상세, 시술 선택, 조정 추가/수정
+  - Tab2_Settlement: 지출 금액 입력, 지출 항목 관리
+  - Tab3_Settings: 시술 추가/수정
+
+### Added
+- **isInBackground prop**: Layer 3 열릴 때 Layer 2 터치 이벤트 비활성화
+- **zIndex prop**: Layer별 z-index 명시 (Layer 2: 50, Layer 3: 60)
+- **z-index stacking**: Overlay(z-0)와 Content(z-10) 상대 순서 명시
+
+### Fixed
+- ✅ 모바일 키보드 입력 시 Sheet 위치 완벽 안정화
+- ✅ Layer 간섭 문제 해결 (조정 Sheet 입력 가능)
+- ✅ 시술 선택 Sheet 90% 고정으로 모든 버튼 접근 가능
+- ✅ z-index stacking order 문제 해결 (터치 이벤트 정상 전달)
+
+### Removed
+- **vaul 드래그 기능 제거**: 입력 안정성을 위해 드래그 확장/축소 기능 포기
+- 모든 Sheet가 90% 고정 높이로 동작
+
+### Technical Details
+- 파일 수정: `src/components/Sheet.tsx`, `src/pages/Tab1_Calendar/index.tsx`
+- vaul 라이브러리는 남아있지만 실제로 사용하지 않음 (향후 제거 가능)
+
+---
+
+## [2025-12-12] - PWA 앱 이름 변경
+
+### Changed
+- 앱 이름: "KI계부" → **"KIMUU"**
+- `vite.config.ts`: manifest name, short_name 업데이트
+- `index.html`: title 태그 업데이트
+
+### Added
+- PWA 아이콘 추가 (4가지 크기):
+  - pwa-64x64.png
+  - pwa-192x192.png
+  - pwa-512x512.png
+  - maskable-icon-512x512.png
+
+---
+
 ## [2025-12-05] - Sheet 컴포넌트 UX 개선
 
 ### Added
@@ -139,4 +200,4 @@
 
 ---
 
-**마지막 업데이트**: 2025-12-05
+**마지막 업데이트**: 2025-12-12
