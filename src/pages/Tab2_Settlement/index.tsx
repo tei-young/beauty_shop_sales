@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { ChevronLeft, ChevronRight, Edit2, Plus, Trash2, Settings } from 'lucide-react';
+import { ChevronLeft, ChevronRight, Edit2, Plus, Trash2, Settings, RefreshCw } from 'lucide-react';
 import { format, addMonths, subMonths } from 'date-fns';
 import { ko } from 'date-fns/locale';
 import Sheet from '../../components/Sheet';
@@ -13,6 +13,7 @@ export default function SettlementTab() {
   const [currentDate, setCurrentDate] = useState(new Date());
   const [selectedCategory, setSelectedCategory] = useState<{ id: string; name: string } | null>(null);
   const [expenseAmount, setExpenseAmount] = useState('');
+  const [isCopying, setIsCopying] = useState(false);
 
   // 지출 항목 관리 상태
   const [isCategoryManageSheetOpen, setIsCategoryManageSheetOpen] = useState(false);
@@ -20,9 +21,12 @@ export default function SettlementTab() {
   const [categoryFormData, setCategoryFormData] = useState({ name: '', icon: '' });
 
   const yearMonth = format(currentDate, 'yyyy-MM');
+  const prevYearMonth = format(subMonths(currentDate, 1), 'yyyy-MM');
+
   const { data: monthlyRecords = [] } = useMonthlyRecords(yearMonth);
   const { data: expenseCategories = [] } = useExpenseCategories();
   const { data: monthlyExpenses = [] } = useMonthlyExpenses(yearMonth);
+  const { data: prevMonthlyExpenses = [] } = useMonthlyExpenses(prevYearMonth);
   const upsertExpense = useUpsertMonthlyExpense();
   const addCategory = useAddExpenseCategory();
   const updateCategory = useUpdateExpenseCategory();
@@ -135,6 +139,55 @@ export default function SettlementTab() {
     }
   };
 
+  // 이전 달 지출 불러오기
+  const handleCopyFromPrevMonth = async () => {
+    // 1. 현재 데이터 확인
+    const hasCurrentData = monthlyExpenses.some(e => e.amount > 0);
+
+    // 2. Confirm 메시지
+    const prevMonthName = format(subMonths(currentDate, 1), 'yyyy년 M월', { locale: ko });
+    const confirmMessage = hasCurrentData
+      ? `현재 데이터를 덮어쓰시겠습니까?\n${prevMonthName} 지출 내역으로 교체됩니다.`
+      : `${prevMonthName} 지출을 불러오시겠습니까?`;
+
+    if (!confirm(confirmMessage)) return;
+
+    // 3. 전월 데이터 없으면 안내
+    if (prevMonthlyExpenses.length === 0) {
+      alert('전월 지출 데이터가 없습니다.');
+      return;
+    }
+
+    // 4. 로딩 시작
+    setIsCopying(true);
+
+    try {
+      // 5. 현재 항목 기준으로 복사
+      const copyTasks = expenseCategories.map(category => {
+        const prevExpense = prevMonthlyExpenses.find(e => e.category_id === category.id);
+        if (prevExpense) {
+          return upsertExpense.mutateAsync({
+            year_month: yearMonth,
+            category_id: category.id,
+            amount: prevExpense.amount,
+          });
+        }
+        return null;
+      }).filter(Boolean);
+
+      // 6. 병렬 실행
+      await Promise.all(copyTasks);
+
+      // 7. 성공 알림
+      const copiedCount = copyTasks.length;
+      alert(`${prevMonthName} 지출 ${copiedCount}건이 복사되었습니다.`);
+    } catch (err: any) {
+      alert(err.message || '복사 중 오류가 발생했습니다.');
+    } finally {
+      setIsCopying(false);
+    }
+  };
+
   // 특정 카테고리의 지출 금액 가져오기
   const getExpenseAmount = (categoryId: string) => {
     const expense = monthlyExpenses.find(e => e.category_id === categoryId);
@@ -193,13 +246,23 @@ export default function SettlementTab() {
         <div className="p-m space-y-4 border-t-8 border-background">
           <div className="flex items-center justify-between">
             <h2 className="text-lg font-semibold">지출 관리</h2>
-            <button
-              onClick={openAddCategorySheet}
-              className="flex items-center gap-1 px-3 py-2 text-sm bg-primary text-white rounded-lg hover:bg-primaryDark transition-colors"
-            >
-              <Plus size={16} />
-              <span>항목 추가</span>
-            </button>
+            <div className="flex gap-2">
+              <button
+                onClick={handleCopyFromPrevMonth}
+                disabled={isCopying}
+                className="flex items-center gap-1 px-3 py-2 text-sm bg-accentHover text-white rounded-lg hover:bg-accentDark transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+              >
+                <RefreshCw size={16} className={isCopying ? 'animate-spin' : ''} />
+                <span>{isCopying ? '복사 중...' : '이전 달 불러오기'}</span>
+              </button>
+              <button
+                onClick={openAddCategorySheet}
+                className="flex items-center gap-1 px-3 py-2 text-sm bg-primary text-white rounded-lg hover:bg-primaryDark transition-colors"
+              >
+                <Plus size={16} />
+                <span>항목 추가</span>
+              </button>
+            </div>
           </div>
 
           {expenseCategories.length > 0 ? (
