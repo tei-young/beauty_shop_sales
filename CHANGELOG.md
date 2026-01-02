@@ -2,6 +2,31 @@
 
 모든 주요 변경사항은 이 파일에 기록됩니다.
 
+## [2025-12-12] - 결산 탭 이전 달 지출 불러오기 기능 추가
+
+### Added
+- **이전 달 불러오기 버튼**: 결산 탭 지출 관리에 전월 지출 복사 기능
+- **RefreshCw 아이콘**: 회전 애니메이션으로 로딩 상태 표시
+- **스마트 확인 메시지**:
+  - 현재 데이터 있음: "현재 데이터를 덮어쓰시겠습니까?" 경고
+  - 데이터 없음: "YYYY년 M월 지출을 불러오시겠습니까?" 일반 확인
+
+### Features
+- 전월 지출 데이터 일괄 복사 (월세, 재료비 등 고정 지출 관리)
+- 1월의 경우 전년도 12월 데이터 자동 조회
+- 현재 존재하는 지출 항목만 기준으로 복사 (삭제된 항목 무시)
+- 복사 후 자동 저장 및 건수 알림
+- 복사 중 로딩 상태 표시 및 다른 작업 차단
+
+### Technical Details
+- `prevYearMonth` 계산: `subMonths(currentDate, 1)` 사용
+- `useMonthlyExpenses` hook으로 전월 데이터 조회
+- `Promise.all`로 병렬 upsert 실행
+- `isCopying` state로 로딩 관리
+- 파일 수정: `src/pages/Tab2_Settlement/index.tsx`
+
+---
+
 ## [2025-12-12] - Sheet 컴포넌트 입력 안정성 개선 및 vaul 제거
 
 ### Problem
@@ -36,6 +61,7 @@
 - ✅ Layer 간섭 문제 해결 (조정 Sheet 입력 가능)
 - ✅ 시술 선택 Sheet 90% 고정으로 모든 버튼 접근 가능
 - ✅ z-index stacking order 문제 해결 (터치 이벤트 정상 전달)
+- ✅ Sheet 내부 스크롤 활성화 (flex container 구조로 변경)
 
 ### Removed
 - **vaul 드래그 기능 제거**: 입력 안정성을 위해 드래그 확장/축소 기능 포기
