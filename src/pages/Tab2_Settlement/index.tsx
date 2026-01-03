@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { ChevronLeft, ChevronRight, Edit2, Plus, Trash2, Settings, RefreshCw } from 'lucide-react';
+import { ChevronLeft, ChevronRight, Edit2, Plus, Trash2, Settings, RefreshCw, X } from 'lucide-react';
 import { format, addMonths, subMonths } from 'date-fns';
 import { ko } from 'date-fns/locale';
 import Sheet from '../../components/Sheet';
@@ -389,21 +389,30 @@ export default function SettlementTab() {
           {/* 이모지 */}
           <div>
             <label className="block text-sm font-medium mb-2">이모지 (선택)</label>
-            <input
-              type="text"
-              value={categoryFormData.icon}
-              onChange={(e) => {
-                // 이모지만 필터링
-                const filtered = e.target.value.split('').filter(char =>
-                  /\p{Emoji}/u.test(char)
-                ).join('');
-                setCategoryFormData({ ...categoryFormData, icon: filtered.slice(0, 2) });
-              }}
-              placeholder="🏠"
-              className="w-full px-4 py-3 border border-divider rounded-lg focus:outline-none focus:ring-2 focus:ring-primary text-center text-3xl"
-            />
+            <div className="relative">
+              <input
+                type="text"
+                value={categoryFormData.icon}
+                onChange={(e) => {
+                  const value = e.target.value;
+                  setCategoryFormData({ ...categoryFormData, icon: value.slice(0, 2) });
+                }}
+                onFocus={(e) => e.target.select()}
+                placeholder="이모지 또는 글자 입력"
+                className="w-full px-4 py-3 border border-divider rounded-lg focus:outline-none focus:ring-2 focus:ring-primary text-center text-3xl"
+              />
+              {categoryFormData.icon && (
+                <button
+                  type="button"
+                  onClick={() => setCategoryFormData({ ...categoryFormData, icon: '' })}
+                  className="absolute right-2 top-1/2 -translate-y-1/2 p-1 hover:bg-gray-100 rounded-full"
+                >
+                  <X size={20} className="text-gray-400" />
+                </button>
+              )}
+            </div>
             <p className="text-xs text-textSecondary mt-1">
-              키보드에서 이모지를 선택하세요
+              이모지 또는 2글자 이내 입력 가능
             </p>
           </div>
 
