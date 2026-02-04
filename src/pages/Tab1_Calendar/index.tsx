@@ -1,10 +1,10 @@
 import { useState } from 'react';
-import { ChevronLeft, ChevronRight, Plus, Minus, Trash2, Edit } from 'lucide-react';
-import { format, addMonths, subMonths } from 'date-fns';
-import { ko } from 'date-fns/locale';
+import { Plus, Minus, Trash2, Edit } from 'lucide-react';
+import { format } from 'date-fns';
 import Calendar from '../../components/Calendar';
 import Sheet from '../../components/Sheet';
 import TreatmentButton from '../../components/TreatmentButton';
+import MonthYearPicker from '../../components/MonthYearPicker';
 import { useMonthlyRecords, useDailyRecords, useAddDailyRecord, useUpdateDailyRecord, useDeleteDailyRecord } from '../../hooks/useDailyRecords';
 import { useTreatments } from '../../hooks/useTreatments';
 import { useDailyAdjustments, useAddAdjustment, useUpdateAdjustment, useDeleteAdjustment } from '../../hooks/useDailyAdjustments';
@@ -42,10 +42,6 @@ export default function CalendarTab() {
   const treatmentTotal = dailyRecords.reduce((sum, record) => sum + record.total_amount, 0);
   const adjustmentTotal = dailyAdjustments.reduce((sum, adj) => sum + adj.amount, 0);
   const dailyTotal = treatmentTotal + adjustmentTotal;
-
-  // 월 변경
-  const handlePrevMonth = () => setCurrentDate(subMonths(currentDate, 1));
-  const handleNextMonth = () => setCurrentDate(addMonths(currentDate, 1));
 
   // 날짜 클릭
   const handleDateClick = (date: string) => {
@@ -226,17 +222,7 @@ export default function CalendarTab() {
     <div className="flex flex-col h-full">
       {/* 헤더 */}
       <div className="p-m border-b border-divider">
-        <div className="flex items-center justify-between mb-3">
-          <button onClick={handlePrevMonth} className="p-2 hover:bg-gray-100 rounded-lg">
-            <ChevronLeft size={24} />
-          </button>
-          <h1 className="text-xl font-semibold">
-            {format(currentDate, 'yyyy년 M월', { locale: ko })}
-          </h1>
-          <button onClick={handleNextMonth} className="p-2 hover:bg-gray-100 rounded-lg">
-            <ChevronRight size={24} />
-          </button>
-        </div>
+        <MonthYearPicker currentDate={currentDate} onChange={setCurrentDate} className="mb-3" />
 
         {/* 월 총 매출 */}
         <div className="bg-accent rounded-lg p-3 text-center">

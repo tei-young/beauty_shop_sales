@@ -1,8 +1,9 @@
 import { useState } from 'react';
-import { ChevronLeft, ChevronRight, Edit2, Plus, Trash2, Settings, RefreshCw, X } from 'lucide-react';
-import { format, addMonths, subMonths } from 'date-fns';
+import { Edit2, Plus, Trash2, Settings, RefreshCw, X } from 'lucide-react';
+import { format, subMonths } from 'date-fns';
 import { ko } from 'date-fns/locale';
 import Sheet from '../../components/Sheet';
+import MonthYearPicker from '../../components/MonthYearPicker';
 import { useMonthlyRecords } from '../../hooks/useDailyRecords';
 import { useExpenseCategories, useAddExpenseCategory, useUpdateExpenseCategory, useDeleteExpenseCategory } from '../../hooks/useExpenseCategories';
 import { useMonthlyExpenses, useUpsertMonthlyExpense } from '../../hooks/useMonthlyExpenses';
@@ -41,10 +42,6 @@ export default function SettlementTab() {
 
   // 순이익 계산
   const netProfit = monthlyRevenue - monthlyExpense;
-
-  // 월 변경
-  const handlePrevMonth = () => setCurrentDate(subMonths(currentDate, 1));
-  const handleNextMonth = () => setCurrentDate(addMonths(currentDate, 1));
 
   // 지출 금액 입력 클릭
   const handleCategoryClick = (categoryId: string, categoryName: string) => {
@@ -208,17 +205,7 @@ export default function SettlementTab() {
     <div className="flex flex-col h-full">
       {/* 헤더 */}
       <div className="p-m border-b border-divider">
-        <div className="flex items-center justify-between">
-          <button onClick={handlePrevMonth} className="p-2 hover:bg-gray-100 rounded-lg">
-            <ChevronLeft size={24} />
-          </button>
-          <h1 className="text-xl font-semibold">
-            {format(currentDate, 'yyyy년 M월', { locale: ko })}
-          </h1>
-          <button onClick={handleNextMonth} className="p-2 hover:bg-gray-100 rounded-lg">
-            <ChevronRight size={24} />
-          </button>
-        </div>
+        <MonthYearPicker currentDate={currentDate} onChange={setCurrentDate} />
       </div>
 
       <div className="flex-1 overflow-y-auto">
