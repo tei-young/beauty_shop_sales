@@ -34,7 +34,7 @@ export function useUpsertMonthlyExpense() {
   const queryClient = useQueryClient();
 
   return useMutation({
-    mutationFn: async (expense: { year_month: string; category_id: string; amount: number }) => {
+    mutationFn: async (expense: { year_month: string; category_id: string; amount: number; memo?: string | null }) => {
       // 1. 기존 기록 확인
       const { data: existing } = await supabase
         .from('monthly_expenses')
@@ -43,11 +43,17 @@ export function useUpsertMonthlyExpense() {
         .eq('category_id', expense.category_id)
         .maybeSingle();
 
+      // memo가 undefined이면 update/insert 대상에서 제외 (복사 시 메모 미변경)
+      const updatePayload: { amount: number; memo?: string | null } = { amount: expense.amount };
+      if (expense.memo !== undefined) {
+        updatePayload.memo = expense.memo;
+      }
+
       if (existing) {
         // 2. 있으면 업데이트
         const { data, error } = await supabase
           .from('monthly_expenses')
-          .update({ amount: expense.amount })
+          .update(updatePayload)
           .eq('id', existing.id)
           .select('*, expense_categories(*)')
           .single();
@@ -64,9 +70,18 @@ export function useUpsertMonthlyExpense() {
         return result as MonthlyExpense;
       } else {
         // 3. 없으면 새로 추가
+        const insertPayload: { year_month: string; category_id: string; amount: number; memo?: string | null } = {
+          year_month: expense.year_month,
+          category_id: expense.category_id,
+          amount: expense.amount,
+        };
+        if (expense.memo !== undefined) {
+          insertPayload.memo = expense.memo;
+        }
+
         const { data, error } = await supabase
           .from('monthly_expenses')
-          .insert(expense)
+          .insert(insertPayload)
           .select('*, expense_categories(*)')
           .single();
 

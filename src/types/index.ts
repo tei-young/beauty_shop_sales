@@ -32,6 +32,7 @@ export interface MonthlyExpenseRow {
   year_month: string;
   category_id: string;
   amount: number;
+  memo: string | null;
   created_at: string;
 }
 
@@ -78,6 +79,7 @@ export interface MonthlyExpense {
   year_month: string;
   category_id: string;
   amount: number;
+  memo?: string | null;
   created_at?: string;
   category?: ExpenseCategory;
 }
