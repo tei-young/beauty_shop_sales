@@ -38,6 +38,7 @@ CREATE TABLE IF NOT EXISTS monthly_expenses (
   year_month TEXT NOT NULL,     -- 'YYYY-MM' 형식
   category_id UUID NOT NULL REFERENCES expense_categories(id) ON DELETE CASCADE,
   amount INTEGER NOT NULL CHECK (amount >= 0),
+  memo TEXT,                   -- 월별 메모 (선택, 복사 시 미포함)
   created_at TIMESTAMPTZ DEFAULT NOW(),
   UNIQUE(year_month, category_id)
 );

@@ -13,6 +13,7 @@ export default function SettlementTab() {
   const [currentDate, setCurrentDate] = useState(new Date());
   const [selectedCategory, setSelectedCategory] = useState<{ id: string; name: string } | null>(null);
   const [expenseAmount, setExpenseAmount] = useState('');
+  const [expenseMemo, setExpenseMemo] = useState('');
   const [isCopying, setIsCopying] = useState(false);
 
   // 지출 항목 관리 상태
@@ -50,12 +51,14 @@ export default function SettlementTab() {
     const existingExpense = monthlyExpenses.find(e => e.category_id === categoryId);
     setSelectedCategory({ id: categoryId, name: categoryName });
     setExpenseAmount(existingExpense ? existingExpense.amount.toString() : '');
+    setExpenseMemo(existingExpense?.memo || '');
   };
 
   // 지출 금액 Sheet 닫기
   const closeExpenseSheet = () => {
     setSelectedCategory(null);
     setExpenseAmount('');
+    setExpenseMemo('');
   };
 
   // 지출 저장
@@ -69,6 +72,7 @@ export default function SettlementTab() {
         year_month: yearMonth,
         category_id: selectedCategory.id,
         amount,
+        memo: expenseMemo || null,
       });
       closeExpenseSheet();
     } catch (err: any) {
@@ -194,6 +198,12 @@ export default function SettlementTab() {
     return expense ? expense.amount : 0;
   };
 
+  // 특정 카테고리의 메모 가져오기
+  const getExpenseMemo = (categoryId: string) => {
+    const expense = monthlyExpenses.find(e => e.category_id === categoryId);
+    return expense?.memo || null;
+  };
+
   return (
     <div className="flex flex-col h-full">
       {/* 헤더 */}
@@ -269,6 +279,7 @@ export default function SettlementTab() {
             <div className="space-y-3">
               {expenseCategories.map((category) => {
                 const amount = getExpenseAmount(category.id);
+                const memo = getExpenseMemo(category.id);
 
                 return (
                   <div
@@ -276,13 +287,16 @@ export default function SettlementTab() {
                     className="bg-card rounded-lg p-4 border border-divider"
                   >
                     <div className="flex items-center justify-between mb-2">
-                      <div className="flex items-center gap-3">
-                        <div className="text-2xl">{category.icon || '📝'}</div>
-                        <div>
+                      <div className="flex items-center gap-3 min-w-0">
+                        <div className="text-2xl flex-shrink-0">{category.icon || '📝'}</div>
+                        <div className="min-w-0">
                           <h3 className="font-semibold">{category.name}</h3>
                           <p className="text-sm text-textSecondary">
                             {amount > 0 ? formatFullCurrency(amount) : '미입력'}
                           </p>
+                          {memo && (
+                            <p className="text-xs text-textSecondary truncate mt-0.5">💬 {memo}</p>
+                          )}
                         </div>
                       </div>
                       <div className="flex gap-1">
@@ -345,6 +359,17 @@ export default function SettlementTab() {
             <p className="text-sm text-textSecondary mt-2 text-center">
               {expenseAmount ? formatFullCurrency(parseInt(expenseAmount) || 0) : '금액을 입력하세요'}
             </p>
+          </div>
+
+          <div>
+            <label className="block text-sm font-medium mb-2">메모 (선택)</label>
+            <textarea
+              value={expenseMemo}
+              onChange={(e) => setExpenseMemo(e.target.value)}
+              placeholder="메모를 입력해주세요"
+              rows={3}
+              className="w-full px-4 py-3 border border-divider rounded-lg focus:outline-none focus:ring-2 focus:ring-primary resize-none"
+            />
           </div>
 
           <div className="flex gap-3 pt-4">
